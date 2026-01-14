@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-http://localhost:8000
+http://localhost
 ```
 
 ## Autenticação
@@ -134,7 +134,7 @@ fetch('/login', {
 
 ```bash
 # Login
-curl -X POST http://localhost:8000/login \
+curl -X POST http://localhost/login \
   -d "username=admin" \
   -d "password=admin123" \
   -d "csrf_token=TOKEN"

@@ -1,0 +1,733 @@
+<?php
+/**
+ * Instalador do Sistema
+ */
+
+// Ativa exibição de erros para debug
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Aumenta limites
+ini_set('memory_limit', '256M');
+ini_set('max_execution_time', '300');
+
+session_start();
+
+$error = '';
+$success = '';
+$needsInstallation = false;
+$needsPassword = false;
+
+// Função para verificar se as tabelas existem
+function checkTablesExist($config) {
+    try {
+        $dsn = "mysql:host={$config['DB_HOST']};port={$config['DB_PORT']};dbname={$config['DB_NAME']};charset=utf8mb4";
+        $pdo = new PDO($dsn, $config['DB_USER'], $config['DB_PASS']);
+        
+        $prefix = $config['DB_PREFIX'];
+        $requiredTables = ['users', 'user_access_logs', 'status', 'levels', 'genders'];
+        
+        foreach ($requiredTables as $table) {
+            $stmt = $pdo->query("SHOW TABLES LIKE '{$prefix}{$table}'");
+            if ($stmt->rowCount() === 0) {
+                return false;
+            }
+        }
+        return true;
+    } catch (PDOException $e) {
+        return false;
+    }
+}
+
+// Verifica se .env existe
+$envExists = file_exists(__DIR__ . '/../.env');
+
+if ($envExists) {
+    // Carrega .env para verificar tabelas
+    $envContent = file_get_contents(__DIR__ . '/../.env');
+    $envLines = explode("\n", $envContent);
+    $envConfig = [];
+    
+    foreach ($envLines as $line) {
+        $line = trim($line);
+        if (empty($line) || strpos($line, '#') === 0) continue;
+        
+        $parts = explode('=', $line, 2);
+        if (count($parts) === 2) {
+            $key = trim($parts[0]);
+            $value = trim($parts[1], '"');
+            $envConfig[$key] = $value;
+        }
+    }
+    
+    // Verifica se as tabelas existem
+    $tablesExist = checkTablesExist($envConfig);
+    
+    if ($tablesExist) {
+        // Sistema já instalado - requer senha para reinstalar
+        $needsPassword = true;
+    } else {
+        // .env existe mas tabelas não - continua instalação
+        $needsInstallation = true;
+        $_SESSION['db_config'] = [
+            'app_name' => $envConfig['APP_NAME'] ?? 'Sistema Administrativo',
+            'app_url' => $envConfig['APP_URL'] ?? 'http://localhost',
+            'db_host' => $envConfig['DB_HOST'] ?? 'localhost',
+            'db_port' => $envConfig['DB_PORT'] ?? '3306',
+            'db_name' => $envConfig['DB_NAME'] ?? '',
+            'db_user' => $envConfig['DB_USER'] ?? 'root',
+            'db_pass' => $envConfig['DB_PASS'] ?? '',
+            'db_prefix' => $envConfig['DB_PREFIX'] ?? 'sa_'
+        ];
+    }
+} else {
+    // .env não existe - precisa instalar
+    $needsInstallation = true;
+}
+
+// Processa verificação de senha para reinstalação
+if ($needsPassword && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_password'])) {
+    try {
+        $dsn = "mysql:host={$envConfig['DB_HOST']};port={$envConfig['DB_PORT']};dbname={$envConfig['DB_NAME']};charset=utf8mb4";
+        $pdo = new PDO($dsn, $envConfig['DB_USER'], $envConfig['DB_PASS']);
+        
+        $prefix = $envConfig['DB_PREFIX'];
+        $stmt = $pdo->prepare("SELECT password FROM {$prefix}users WHERE level_id = 1 LIMIT 1");
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user && password_verify($_POST['admin_password'], $user['password'])) {
+            // Senha correta - permite reinstalação
+            $needsPassword = false;
+            $needsInstallation = true;
+            $_SESSION['reinstall_authorized'] = true;
+            $success = "Acesso autorizado! Você pode reinstalar o sistema.";
+        } else {
+            $error = "Senha incorreta!";
+        }
+    } catch (PDOException $e) {
+        $error = "Erro ao verificar senha: " . $e->getMessage();
+    }
+}
+
+// Se não está autorizado para reinstalar, bloqueia
+if ($needsPassword && !isset($_SESSION['reinstall_authorized'])) {
+    // Mostra tela de senha
+    $showPasswordScreen = true;
+} else {
+    $showPasswordScreen = false;
+}
+
+$step = $_GET['step'] ?? ($needsInstallation && isset($_SESSION['db_config']) && !empty($_SESSION['db_config']['db_name']) ? 2 : 1);
+
+// Processa formulários
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // STEP 1: Teste de conexão
+    if (isset($_POST['test_connection'])) {
+        try {
+            // Valida prefixo
+            $prefix = trim($_POST['db_prefix']);
+            $dbName = trim($_POST['db_name']);
+            
+            if (empty($prefix)) {
+                $error = "Prefixo não pode estar vazio.";
+            } elseif (!preg_match('/^[a-z0-9_]+$/i', $prefix)) {
+                $error = "Prefixo deve conter apenas letras, números e underscore (_).";
+            } elseif (strlen($prefix) > 20) {
+                $error = "Prefixo muito longo. Use no máximo 20 caracteres.";
+            } elseif (strtolower($prefix) === strtolower($dbName) || 
+                      strtolower(rtrim($prefix, '_')) === strtolower($dbName)) {
+                $error = "Não use o nome do banco ('{$dbName}') como prefixo. Use algo como 'sa_' ou 'app_'.";
+            } else {
+                $dsn = "mysql:host={$_POST['db_host']};port={$_POST['db_port']};charset=utf8mb4";
+                $pdo = new PDO($dsn, $_POST['db_user'], $_POST['db_pass']);
+                
+                // Testa se o banco existe
+                $stmt = $pdo->query("SHOW DATABASES LIKE '{$_POST['db_name']}'");
+                if ($stmt->rowCount() === 0) {
+                    $error = "Banco de dados '{$_POST['db_name']}' não existe. Crie-o primeiro.";
+                } else {
+                    $success = "Conexão bem-sucedida!";
+                    $_SESSION['db_config'] = $_POST;
+                }
+            }
+        } catch (PDOException $e) {
+            $error = "Erro de conexão: " . $e->getMessage();
+        }
+    }
+    
+        // STEP 2: Criar tabelas
+    if (isset($_POST['create_tables'])) {
+        $_SESSION['db_config'] = array_merge($_SESSION['db_config'] ?? [], $_POST);
+        
+        try {
+            $config = $_SESSION['db_config'];
+            $dsn = "mysql:host={$config['db_host']};port={$config['db_port']};dbname={$config['db_name']};charset=utf8mb4";
+            $pdo = new PDO($dsn, $config['db_user'], $config['db_pass']);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $prefix = $config['db_prefix'];
+            
+            // Lê o schema SQL com debug completo
+            $schemaFile = __DIR__ . '/../database/schema.sql';
+            $_SESSION['schema_path_tried'] = $schemaFile;
+            $_SESSION['schema_exists'] = file_exists($schemaFile) ? 'SIM' : 'NÃO';
+            $_SESSION['dir_constant'] = __DIR__;
+            
+            if (!file_exists($schemaFile)) {
+                $schemaFile = dirname(__DIR__) . '/database/schema.sql';
+                if (!file_exists($schemaFile)) {
+                    $schemaFile = $_SERVER['DOCUMENT_ROOT'] . '/mvc08/database/schema.sql';
+                    if (!file_exists($schemaFile)) {
+                        throw new Exception("Arquivo schema.sql não encontrado em nenhum caminho!");
+                    }
+                }
+            }
+            
+            $_SESSION['schema_final_path'] = $schemaFile;
+            $sql = @file_get_contents($schemaFile);
+            $_SESSION['file_get_contents_result'] = $sql === false ? 'FALHOU' : strlen($sql) . ' bytes';
+            
+            if ($sql === false || empty($sql)) {
+                throw new Exception("Não foi possível ler o arquivo schema.sql ou está vazio!");
+            }
+            
+            // Substitui prefixo
+            $sql = str_replace('`sa_', '`' . $prefix, $sql);
+            $sql = str_replace('sa_', $prefix, $sql);
+            $_SESSION['processed_sql_length'] = strlen($sql);
+            
+            // Remove blocos DELIMITER linha por linha
+            $lines = explode("\n", $sql);
+            $cleanedSql = '';
+            $skipBlock = false;
+            
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                
+                if (stripos($trimmed, 'DELIMITER $$') !== false) {
+                    $skipBlock = true;
+                    continue;
+                }
+                if (stripos($trimmed, 'DELIMITER ;') !== false) {
+                    $skipBlock = false;
+                    continue;
+                }
+                
+                if ($skipBlock) continue;
+                
+                if (stripos($trimmed, 'ANALYZE TABLE') !== false ||
+                    stripos($trimmed, 'OPTIMIZE TABLE') !== false) {
+                    continue;
+                }
+                
+                $cleanedSql .= $line . "\n";
+            }
+            
+            $_SESSION['cleaned_sql_length'] = strlen($cleanedSql);
+            $_SESSION['cleaned_sql_preview'] = substr($cleanedSql, 0, 500);
+            
+            // Separa e executa comandos
+            $statements = explode(';', $cleanedSql);
+            $_SESSION['total_statements'] = count($statements);
+            $executedCount = 0;
+            $errors = [];
+            
+            foreach ($statements as $statement) {
+                $statement = trim($statement);
+                
+                if (empty($statement) || strpos($statement, '--') === 0 || strlen($statement) < 10) {
+                    continue;
+                }
+                
+                try {
+                    $pdo->exec($statement);
+                    $executedCount++;
+                } catch (PDOException $e) {
+                    $errorMsg = $e->getMessage();
+                    $ignorePatterns = ['already exists', 'Duplicate', 'Can\'t DROP', 'Unknown table'];
+                    $shouldIgnore = false;
+                    
+                    foreach ($ignorePatterns as $pattern) {
+                        if (stripos($errorMsg, $pattern) !== false) {
+                            $shouldIgnore = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!$shouldIgnore) {
+                        $errors[] = substr($errorMsg, 0, 150);
+                        if (count($errors) >= 5) break;
+                    }
+                }
+            }
+            
+            if (!empty($errors)) {
+                $error = "Alguns comandos falharam: " . implode('; ', array_slice($errors, 0, 3));
+            } else {
+                $success = "Tabelas criadas com sucesso! ({$executedCount} comandos executados)";
+            }
+            
+            // Verifica se foram criadas
+            $stmt = $pdo->query("SHOW TABLES LIKE '{$prefix}users'");
+            if ($stmt->rowCount() === 0) {
+                $allTables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+                $error = "Aviso: Tabela {$prefix}users não foi encontrada. Comandos executados: {$executedCount}<br><br>";
+                $error .= "<strong>Debug Info:</strong><br>";
+                $error .= "Caminho tentado: " . ($_SESSION['schema_path_tried'] ?? 'N/A') . "<br>";
+                $error .= "Arquivo existe? " . ($_SESSION['schema_exists'] ?? 'N/A') . "<br>";
+                $error .= "__DIR__: " . ($_SESSION['dir_constant'] ?? 'N/A') . "<br>";
+                $error .= "Caminho final: " . ($_SESSION['schema_final_path'] ?? 'N/A') . "<br>";
+                $error .= "file_get_contents: " . ($_SESSION['file_get_contents_result'] ?? 'N/A') . "<br>";
+                $error .= "SQL Original: " . ($_SESSION['processed_sql_length'] ?? 0) . " bytes<br>";
+                $error .= "SQL Limpo: " . ($_SESSION['cleaned_sql_length'] ?? 0) . " bytes<br>";
+                $error .= "Total Statements: " . ($_SESSION['total_statements'] ?? 0) . "<br><br>";
+                $error .= "<strong>Preview SQL:</strong><br><code>" . htmlspecialchars($_SESSION['cleaned_sql_preview'] ?? 'N/A') . "</code><br><br>";
+                $error .= "<strong>Tabelas existentes:</strong><br>" . (empty($allTables) ? "Nenhuma" : implode(', ', $allTables));
+                $error .= "<br><br><strong>Erros:</strong><br>" . (empty($errors) ? "Nenhum" : implode('<br>', $errors));
+            } else {
+                $step = 3;
+            }
+        } catch (PDOException $e) {
+            $error = "Erro ao criar tabelas: " . $e->getMessage();
+        } catch (Exception $e) {
+            $error = "Erro: " . $e->getMessage();
+        }
+    }
+
+
+    // STEP 3: Criar usuário e finalizar
+    if (isset($_POST['create_user'])) {
+        try {
+            $config = $_SESSION['db_config'];
+            $dsn = "mysql:host={$config['db_host']};port={$config['db_port']};dbname={$config['db_name']};charset=utf8mb4";
+            $pdo = new PDO($dsn, $config['db_user'], $config['db_pass']);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $prefix = $config['db_prefix'];
+            
+            // Verifica se a tabela existe
+            $stmt = $pdo->query("SHOW TABLES LIKE '{$prefix}users'");
+            if ($stmt->rowCount() === 0) {
+                throw new Exception("Tabela {$prefix}users não encontrada. Execute o passo 2 primeiro.");
+            }
+            
+            // Cria usuário
+            $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+            $uniqueCode = strtoupper(substr($_POST['username'], 0, 3)) . rand(100, 999);
+            
+            $stmt = $pdo->prepare("
+                INSERT INTO {$prefix}users (name, email, username, password, unique_code, level_id, status_id)
+                VALUES (?, ?, ?, ?, ?, 1, 1)
+            ");
+            $stmt->execute([
+                $_POST['name'],
+                $_POST['email'],
+                $_POST['username'],
+                $password,
+                $uniqueCode
+            ]);
+            
+            // Cria arquivo .env
+            $envContent = "# Database Configuration
+DB_HOST={$config['db_host']}
+DB_PORT={$config['db_port']}
+DB_NAME={$config['db_name']}
+DB_USER={$config['db_user']}
+DB_PASS={$config['db_pass']}
+DB_PREFIX={$config['db_prefix']}
+DB_CHARSET=utf8mb4
+
+# Application
+APP_NAME=\"{$config['app_name']}\"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL={$config['app_url']}
+APP_TIMEZONE=America/Sao_Paulo
+
+# Security
+SESSION_LIFETIME=7200
+CSRF_TOKEN_NAME=csrf_token
+PASSWORD_HASH_ALGO=bcrypt
+
+# Email Configuration
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@example.com
+MAIL_FROM_NAME=\"{$config['app_name']}\"
+
+# Paths
+UPLOAD_PATH=public/uploads
+LOG_PATH=storage/logs
+CACHE_PATH=storage/cache
+SESSION_PATH=storage/sessions
+";
+            
+            file_put_contents(__DIR__ . '/../.env', $envContent);
+            
+            // Limpa sessão
+            unset($_SESSION['db_config']);
+            
+            $success = "Instalação concluída com sucesso!";
+            $step = 4;
+        } catch (PDOException $e) {
+            $error = "Erro ao criar usuário: " . $e->getMessage();
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instalação - Sistema Administrativo MVC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .install-card { max-width: 600px; margin: 50px auto; }
+        .step-indicator { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .step { flex: 1; text-align: center; padding: 10px; position: relative; }
+        .step.active { color: #0d6efd; font-weight: bold; }
+        .step.completed { color: #198754; }
+        .step::after { content: ''; position: absolute; top: 50%; right: -50%; width: 100%; height: 2px; background: #dee2e6; z-index: -1; }
+        .step:last-child::after { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="install-card">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-gear-fill"></i> Instalação do Sistema</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Indicador de passos -->
+                    <div class="step-indicator">
+                        <div class="step <?= $step >= 1 ? 'active' : '' ?> <?= $step > 1 ? 'completed' : '' ?>">
+                            <i class="bi bi-database"></i><br>Banco
+                        </div>
+                        <div class="step <?= $step >= 2 ? 'active' : '' ?> <?= $step > 2 ? 'completed' : '' ?>">
+                            <i class="bi bi-table"></i><br>Tabelas
+                        </div>
+                        <div class="step <?= $step >= 3 ? 'active' : '' ?> <?= $step > 3 ? 'completed' : '' ?>">
+                            <i class="bi bi-person-plus"></i><br>Usuário
+                        </div>
+                        <div class="step <?= $step >= 4 ? 'active' : '' ?>">
+                            <i class="bi bi-check-circle"></i><br>Concluído
+                        </div>
+                    </div>
+
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <i class="bi bi-exclamation-triangle"></i> <?= $error ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($success): ?>
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="bi bi-check-circle"></i> <?= $success ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- TELA DE SENHA PARA REINSTALAÇÃO -->
+                    <?php if ($showPasswordScreen): ?>
+                        <div class="text-center mb-4">
+                            <i class="bi bi-shield-lock text-warning" style="font-size: 64px;"></i>
+                            <h5 class="mt-3">Sistema Já Instalado</h5>
+                            <p class="text-muted">Para reinstalar o sistema, digite a senha do administrador master.</p>
+                        </div>
+                        
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Senha do Administrador Master</label>
+                                <input type="password" class="form-control form-control-lg" name="admin_password" required autofocus>
+                                <small class="text-muted">Digite a senha do primeiro usuário criado (nível Master)</small>
+                            </div>
+                            <button type="submit" name="verify_password" class="btn btn-warning w-100">
+                                <i class="bi bi-unlock"></i> Verificar e Continuar
+                            </button>
+                        </form>
+                        
+                        <div class="text-center mt-3">
+                            <a href="/" class="text-decoration-none">
+                                <i class="bi bi-arrow-left"></i> Voltar ao Sistema
+                            </a>
+                        </div>
+                        
+                    <?php elseif (!$needsInstallation): ?>
+                        <!-- Sistema instalado e funcionando -->
+                        <div class="text-center">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 64px;"></i>
+                            <h5 class="mt-3">Sistema Já Instalado</h5>
+                            <p>O sistema está instalado e funcionando corretamente.</p>
+                            <a href="/" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Acessar Sistema
+                            </a>
+                        </div>
+                    <?php else: ?>
+                    
+                    <!-- STEP 1: Configuração do Banco -->
+                    <?php if ($step == 1): ?>
+                        <?php if (isset($_SESSION['db_config']) && !empty($_SESSION['db_config']['db_name'])): ?>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> <strong>Configuração detectada!</strong><br>
+                                O arquivo .env foi encontrado, mas as tabelas do banco não existem. 
+                                Você pode pular para o próximo passo ou reconfigurar.
+                            </div>
+                            <a href="?step=2" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-arrow-right"></i> Pular para Criação de Tabelas
+                            </a>
+                            <hr>
+                            <p class="text-center text-muted">Ou reconfigure abaixo:</p>
+                        <?php endif; ?>
+                        
+                        <h5 class="mb-3">Passo 1: Configuração do Banco de Dados</h5>
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Nome da Aplicação</label>
+                                <input type="text" class="form-control" name="app_name" 
+                                       value="<?= $_SESSION['db_config']['app_name'] ?? 'Sistema Administrativo' ?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL da Aplicação</label>
+                                <input type="text" class="form-control" name="app_url" 
+                                       value="<?= $_SESSION['db_config']['app_url'] ?? 'http://localhost/mvc08' ?>" required>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label class="form-label">Host do Banco</label>
+                                    <input type="text" class="form-control" name="db_host" 
+                                           value="<?= $_SESSION['db_config']['db_host'] ?? 'localhost' ?>" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Porta</label>
+                                    <input type="text" class="form-control" name="db_port" 
+                                           value="<?= $_SESSION['db_config']['db_port'] ?? '3306' ?>" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nome do Banco</label>
+                                <input type="text" class="form-control" name="db_name" 
+                                       value="<?= $_SESSION['db_config']['db_name'] ?? 'sistema_admin' ?>" required>
+                                <small class="text-muted">O banco deve existir. Crie-o antes de continuar.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Usuário</label>
+                                <input type="text" class="form-control" name="db_user" 
+                                       value="<?= $_SESSION['db_config']['db_user'] ?? 'root' ?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Senha</label>
+                                <input type="password" class="form-control" name="db_pass" 
+                                       value="<?= $_SESSION['db_config']['db_pass'] ?? '' ?>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Prefixo das Tabelas</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="db_prefix" id="db_prefix"
+                                           value="<?= $_SESSION['db_config']['db_prefix'] ?? 'sa_' ?>" required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="suggestPrefix()">
+                                        <i class="bi bi-lightbulb"></i> Sugerir
+                                    </button>
+                                </div>
+                                <small class="text-muted">
+                                    <strong>Recomendado:</strong> <code>sa_</code>, <code>app_</code>, <code>sys_</code><br>
+                                    ⚠️ Não use o nome do banco como prefixo<br>
+                                    <span id="prefix-preview" class="text-primary"></span>
+                                </small>
+                            </div>
+                            
+                            <script>
+                            // Preview do prefixo
+                            const prefixInput = document.getElementById('db_prefix');
+                            const prefixPreview = document.getElementById('prefix-preview');
+                            
+                            function updatePreview() {
+                                const prefix = prefixInput.value || 'sa_';
+                                prefixPreview.innerHTML = `<strong>Exemplo:</strong> ${prefix}users, ${prefix}status, ${prefix}levels`;
+                            }
+                            
+                            function suggestPrefix() {
+                                const suggestions = ['sa_', 'app_', 'sys_', 'adm_', 'web_'];
+                                const random = suggestions[Math.floor(Math.random() * suggestions.length)];
+                                prefixInput.value = random;
+                                updatePreview();
+                            }
+                            
+                            if (prefixInput) {
+                                prefixInput.addEventListener('input', updatePreview);
+                                updatePreview();
+                            }
+                            </script>
+                            <button type="submit" name="test_connection" class="btn btn-primary w-100">
+                                <i class="bi bi-plug"></i> Testar Conexão
+                            </button>
+                        </form>
+                        
+                        <?php if ($success): ?>
+                            <a href="?step=2" class="btn btn-success w-100 mt-3">
+                                Próximo <i class="bi bi-arrow-right"></i>
+                            </a>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <!-- STEP 2: Criar Tabelas -->
+                    <?php if ($step == 2): ?>
+                        <h5 class="mb-3">Passo 2: Criar Tabelas do Banco</h5>
+                        
+                        <?php if (isset($_SESSION['db_config'])): ?>
+                            <div class="alert alert-info">
+                                <strong>Prefixo configurado:</strong> <code><?= $_SESSION['db_config']['db_prefix'] ?></code><br>
+                                <small>Todas as tabelas serão criadas com este prefixo.</small>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <p>As seguintes tabelas serão criadas:</p>
+                        <ul class="small">
+                            <li><code><?= $_SESSION['db_config']['db_prefix'] ?? 'sa_' ?>users</code> - Usuários</li>
+                            <li><code><?= $_SESSION['db_config']['db_prefix'] ?? 'sa_' ?>user_access_logs</code> - Logs de acesso</li>
+                            <li><code><?= $_SESSION['db_config']['db_prefix'] ?? 'sa_' ?>status</code> - Status</li>
+                            <li><code><?= $_SESSION['db_config']['db_prefix'] ?? 'sa_' ?>levels</code> - Níveis de acesso</li>
+                            <li><code><?= $_SESSION['db_config']['db_prefix'] ?? 'sa_' ?>genders</code> - Gêneros</li>
+                        </ul>
+                        
+                        <p class="mt-3">Também serão criados:</p>
+                        <ul class="small">
+                            <li><strong>2 Views:</strong> Consultas otimizadas</li>
+                            <li><strong>Chaves Estrangeiras:</strong> Integridade referencial</li>
+                            <li><strong>Índices:</strong> Otimização de consultas</li>
+                            <li><strong>Dados Iniciais:</strong> Status, níveis e gêneros</li>
+                        </ul>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Nota:</strong> Triggers, procedures e eventos serão ignorados pelo instalador web. 
+                            Você pode adicioná-los manualmente depois importando o <code>schema.sql</code> completo.
+                        </div>
+                        <form method="POST">
+                            <?php foreach ($_SESSION['db_config'] as $key => $value): ?>
+                                <input type="hidden" name="<?= $key ?>" value="<?= htmlspecialchars($value) ?>">
+                            <?php endforeach; ?>
+                            <button type="submit" name="create_tables" class="btn btn-primary w-100">
+                                <i class="bi bi-table"></i> Criar Tabelas
+                            </button>
+                        </form>
+                        <a href="?step=1" class="btn btn-secondary w-100 mt-2">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                    <?php endif; ?>
+
+                    <!-- STEP 3: Criar Usuário -->
+                    <?php if ($step == 3): ?>
+                        <h5 class="mb-3">Passo 3: Criar Primeiro Usuário</h5>
+                        
+                        <?php
+                        // Debug: mostra configuração atual
+                        if (isset($_SESSION['db_config'])) {
+                            $config = $_SESSION['db_config'];
+                            echo '<div class="alert alert-info small">';
+                            echo '<strong>Configuração:</strong><br>';
+                            echo "Banco: {$config['db_name']}<br>";
+                            echo "Prefixo: {$config['db_prefix']}<br>";
+                            echo "Tabela: {$config['db_prefix']}users";
+                            echo '</div>';
+                        }
+                        ?>
+                        
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Nome Completo</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">E-mail</label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Usuário</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Senha</label>
+                                <input type="password" class="form-control" name="password" required minlength="6">
+                            </div>
+                            <button type="submit" name="create_user" class="btn btn-success w-100">
+                                <i class="bi bi-person-plus"></i> Criar Usuário e Finalizar
+                            </button>
+                        </form>
+                    <?php endif; ?>
+
+                    <!-- STEP 4: Concluído -->
+                    <?php if ($step == 4): ?>
+                        <div class="text-center">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 64px;"></i>
+                            <h5 class="mt-3">Instalação Concluída!</h5>
+                            <p>O sistema foi instalado com sucesso.</p>
+                            <a href="/" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Acessar Sistema
+                            </a>
+                            <hr>
+                            <small class="text-muted">
+                                Por segurança, delete o arquivo install.php após a instalação.
+                            </small>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php endif; // fim do else needsInstallation ?>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Modal de Debug -->
+    <?php if (isset($_GET['show_debug']) && isset($_SESSION['install_debug'])): ?>
+    <div class="modal fade show" id="debugModal" style="display:block; background:rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Debug da Instalação</h5>
+                    <a href="?step=2" class="btn-close btn-close-white"></a>
+                </div>
+                <div class="modal-body" style="max-height:500px; overflow-y:auto;">
+                    <h6>Comandos SQL Executados:</h6>
+                    <?php foreach ($_SESSION['install_debug'] as $i => $log): ?>
+                        <div class="mb-2 p-2 border-start border-3 <?= $log['status'] === 'ok' ? 'border-success bg-light' : ($log['status'] === 'error' ? 'border-danger bg-danger bg-opacity-10' : 'border-warning bg-warning bg-opacity-10') ?>">
+                            <div class="d-flex justify-content-between">
+                                <strong>[<?= $i + 1 ?>]</strong>
+                                <span class="badge bg-<?= $log['status'] === 'ok' ? 'success' : ($log['status'] === 'error' ? 'danger' : 'warning') ?>">
+                                    <?= $log['status'] ?>
+                                </span>
+                            </div>
+                            <code class="small"><?= htmlspecialchars($log['sql']) ?>...</code>
+                            <?php if (isset($log['error'])): ?>
+                                <div class="text-danger small mt-1">
+                                    <strong>Erro:</strong> <?= htmlspecialchars($log['error']) ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="modal-footer">
+                    <a href="?step=2" class="btn btn-secondary">Fechar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+</body>
+</html>

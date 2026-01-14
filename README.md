@@ -37,20 +37,63 @@ Sistema administrativo completo desenvolvido em PHP com arquitetura MVC Profissi
 
 ## Instalação
 
-### 1. Clone o repositório
+### Método 1: Instalador Web (Recomendado) 🎉
+
+O sistema possui um instalador web inteligente que facilita todo o processo!
+
+#### 1. Instale as dependências
+
+```bash
+composer install
+```
+
+#### 2. Crie o banco de dados
+
+```sql
+CREATE DATABASE sistema_admin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+#### 3. Acesse o instalador
+
+```
+http://localhost/mvc08/public/install.php
+```
+
+#### 4. Siga os passos na interface
+
+- **Passo 1:** Configure banco de dados (com teste de conexão)
+- **Passo 2:** Crie tabelas automaticamente
+- **Passo 3:** Crie primeiro usuário
+- **Passo 4:** Pronto! Sistema instalado
+
+**Recursos do Instalador:**
+- ✅ Teste de conexão antes de instalar
+- ✅ Criação automática de tabelas
+- ✅ Geração automática do .env
+- ✅ Interface amigável e intuitiva
+- ✅ Detecção inteligente de instalação
+- ✅ Proteção por senha para reinstalação
+
+Veja mais detalhes em [INSTALL_WEB.md](INSTALL_WEB.md)
+
+---
+
+### Método 2: Instalação Manual
+
+#### 1. Clone o repositório
 
 ```bash
 git clone <seu-repositorio>
 cd sistema-administrativo
 ```
 
-### 2. Instale as dependências
+#### 2. Instale as dependências
 
 ```bash
 composer install
 ```
 
-### 3. Configure o ambiente
+#### 3. Configure o ambiente
 
 ```bash
 copy .env.example .env
@@ -61,21 +104,15 @@ Edite o arquivo `.env` com suas configurações:
 - Email
 - Outras configurações
 
-### 4. Crie o banco de dados
+#### 4. Crie o banco de dados
 
 Execute o script SQL em `database/schema.sql` no seu banco de dados.
 
-### 5. Configure o servidor web
+#### 5. Configure o servidor web
 
 #### Apache
 
 Certifique-se de que o `mod_rewrite` está habilitado e aponte o DocumentRoot para a pasta `public/`.
-
-#### PHP Built-in Server (desenvolvimento)
-
-```bash
-php -S localhost:8000 -t public
-```
 
 ## Credenciais Padrão
 

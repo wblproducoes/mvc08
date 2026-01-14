@@ -6,6 +6,17 @@ Este é um sistema administrativo profissional desenvolvido em PHP 8.4+ com arqu
 
 ## ✅ O que foi implementado
 
+### Instalador Web (v1.1.0)
+- ✅ Interface web completa para instalação
+- ✅ Teste de conexão com banco de dados
+- ✅ Criação automática de tabelas
+- ✅ Criação do primeiro usuário
+- ✅ Geração automática do .env
+- ✅ Detecção inteligente de instalação
+- ✅ Proteção por senha para reinstalação
+- ✅ Indicador visual de progresso
+- ✅ Validação em todas as etapas
+
 ### Estrutura Core
 - ✅ Router com suporte a middlewares
 - ✅ Controller base com Twig
@@ -45,6 +56,7 @@ Este é um sistema administrativo profissional desenvolvido em PHP 8.4+ com arqu
 - ✅ Security (CSRF, Hash, Sanitização)
 - ✅ Validator (Validação de dados)
 - ✅ Logger (Sistema de logs)
+- ✅ InstallChecker (Verificação de instalação)
 
 ### Views (Twig)
 - ✅ Layout base responsivo
@@ -75,16 +87,17 @@ Este é um sistema administrativo profissional desenvolvido em PHP 8.4+ com arqu
 
 ### Documentação
 - ✅ README.md completo
-- ✅ INSTALL.md (guia de instalação)
+- ✅ INSTALL.md (guia de instalação manual)
+- ✅ INSTALL_WEB.md (guia do instalador web)
 - ✅ QUICKSTART.md (início rápido)
 - ✅ CHANGELOG.md
+- ✅ API_DOCUMENTATION.md
 - ✅ Comentários PHPDoc em todo código
 
 ### Ferramentas
 - ✅ composer.json configurado
 - ✅ .gitignore
 - ✅ .htaccess para Apache
-- ✅ setup.bat (instalação automática Windows)
 
 ## 📁 Estrutura de Arquivos
 
@@ -157,21 +170,36 @@ sistema-administrativo/
 
 ## 🚀 Como Usar
 
-### Instalação Rápida
+### Instalação Rápida (Instalador Web)
 ```bash
-# 1. Execute o setup
-setup.bat
+# 1. Instale dependências
+composer install
+
+# 2. Crie o banco de dados
+CREATE DATABASE sistema_admin;
+
+# 3. Acesse o instalador web
+http://localhost/mvc08/public/install.php
+
+# 4. Siga os passos na interface:
+#    - Configure banco de dados (com teste de conexão)
+#    - Crie tabelas automaticamente
+#    - Crie primeiro usuário
+#    - Pronto!
+```
+
+### Instalação Manual (Alternativa)
+```bash
+# 1. Instale dependências
+composer install
 
 # 2. Configure o .env
+copy .env.example .env
 # Edite DB_HOST, DB_NAME, DB_USER, DB_PASS
 
 # 3. Crie o banco e importe schema.sql
 
-# 4. Inicie o servidor
-php -S localhost:8000 -t public
-
-# 5. Acesse http://localhost:8000
-# Login: admin / Senha: admin123
+# 4. Acesse http://localhost/mvc08
 ```
 
 ## 🔐 Credenciais Padrão
@@ -240,15 +268,17 @@ php -S localhost:8000 -t public
 
 ## 📊 Estatísticas
 
-- **Total de arquivos:** 50+
-- **Linhas de código:** 2000+
-- **Classes PHP:** 20+
+- **Versão:** 1.1.0
+- **Total de arquivos:** 55+
+- **Linhas de código:** 2500+
+- **Classes PHP:** 22+
 - **Views Twig:** 3
 - **Rotas:** 7
 - **Middlewares:** 3
 - **Services:** 3
 - **Models:** 5
-- **Helpers:** 3
+- **Helpers:** 4
+- **Instalador:** Interface web completa
 
 ## ✨ Destaques
 
@@ -263,6 +293,7 @@ php -S localhost:8000 -t public
 
 ---
 
-**Versão:** 1.0.0  
+**Versão:** 1.1.0  
 **Data:** 14/01/2026  
-**Status:** ✅ Completo e funcional
+**Status:** ✅ Completo e funcional  
+**Novidade:** 🎉 Instalador Web Inteligente com detecção automática e proteção por senha!

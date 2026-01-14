@@ -1,14 +1,18 @@
 # Guia Rápido de Início
 
-## Instalação Rápida (Windows)
+## Instalação Rápida
 
-### 1. Execute o setup automático
+### 1. Instale as dependências
 
 ```bash
-setup.bat
+composer install
 ```
 
 ### 2. Configure o .env
+
+```bash
+copy .env.example .env
+```
 
 Abra o arquivo `.env` e configure:
 
@@ -29,15 +33,13 @@ CREATE DATABASE sistema_admin;
 
 Depois importe o arquivo `database/schema.sql`
 
-### 4. Inicie o servidor
+### 4. Configure o Apache/Nginx
 
-```bash
-php -S localhost:8000 -t public
-```
+Aponte o DocumentRoot para a pasta `public/` do projeto.
 
 ### 5. Acesse o sistema
 
-- URL: http://localhost:8000
+- URL: http://localhost (ou seu domínio configurado)
 - Usuário: `admin`
 - Senha: `admin123`
 
@@ -112,10 +114,9 @@ composer dump-autoload
 - Verifique `storage/logs/`
 
 ### .htaccess não funciona
-Use o servidor PHP built-in:
-```bash
-php -S localhost:8000 -t public
-```
+- Habilite mod_rewrite: `a2enmod rewrite`
+- Verifique AllowOverride All no VirtualHost
+- Reinicie o Apache
 
 ## Próximos Passos
 

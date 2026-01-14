@@ -150,18 +150,10 @@ server {
 }
 ```
 
-#### PHP Built-in Server (Desenvolvimento)
-
-```bash
-php -S localhost:8000 -t public
-```
-
-Acesse: http://localhost:8000
-
 ### 9. Testar Instalação
 
 Acesse o sistema no navegador:
-- URL: http://sistema-admin.local (ou http://localhost:8000)
+- URL: http://sistema-admin.local (ou http://localhost conforme sua configuração)
 - Usuário: `admin`
 - Senha: `admin123`
 
@@ -195,8 +187,9 @@ chmod -R 775 storage/
 - Verifique logs do Apache/Nginx
 
 ### .htaccess não funciona
-- Verifique se mod_rewrite está habilitado
+- Verifique se mod_rewrite está habilitado: `a2enmod rewrite`
 - Confirme AllowOverride All no VirtualHost
+- Reinicie o Apache: `service apache2 restart`
 
 ## Suporte
 

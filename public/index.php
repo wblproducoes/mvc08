@@ -4,12 +4,44 @@
  * Ponto de entrada do sistema
  */
 
+// Verifica se o autoload existe
+if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    die('Erro: Execute "composer install" para instalar as dependências.');
+}
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Dotenv\Dotenv;
 use App\Core\Router;
 
-// Carrega variáveis de ambiente
+// Função para verificar se as tabelas existem
+function checkSystemInstalled() {
+    if (!file_exists(__DIR__ . '/../.env')) {
+        return false;
+    }
+    
+    try {
+        $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+        $dotenv->load();
+        
+        $dsn = "mysql:host={$_ENV['DB_HOST']};port={$_ENV['DB_PORT']};dbname={$_ENV['DB_NAME']};charset=utf8mb4";
+        $pdo = new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASS']);
+        
+        $prefix = $_ENV['DB_PREFIX'];
+        $stmt = $pdo->query("SHOW TABLES LIKE '{$prefix}users'");
+        
+        return $stmt->rowCount() > 0;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+// Redireciona para instalador se sistema não estiver instalado
+if (!checkSystemInstalled()) {
+    header('Location: /mvc08/public/install.php');
+    exit;
+}
+
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
