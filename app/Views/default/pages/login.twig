@@ -1,0 +1,90 @@
+{% extends "default/layout.twig" %}
+
+{% block title %}Login - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+        <div class="col-md-6 d-none d-md-flex bg-primary align-items-center justify-content-center">
+            <div class="text-white text-center">
+                <h1 class="display-4 fw-bold">{{ app_name }}</h1>
+                <p class="lead">Sistema Administrativo MVC Profissional</p>
+            </div>
+        </div>
+        
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <div class="w-100" style="max-width: 400px;">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold">Bem-vindo</h2>
+                    <p class="text-muted">Entre com suas credenciais</p>
+                </div>
+                
+                <div id="alert-container"></div>
+                
+                <form id="loginForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Usuário</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember">
+                        <label class="form-check-label" for="remember">Lembrar-me</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Entrar</button>
+                    
+                    <div class="text-center">
+                        <a href="/forgot-password" class="text-decoration-none">Esqueceu a senha?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const alertContainer = document.getElementById('alert-container');
+    
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+    } catch (error) {
+        alertContainer.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                Erro ao processar login
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+    }
+});
+</script>
+{% endblock %}
