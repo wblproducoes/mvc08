@@ -2,51 +2,44 @@
 
 {% block title %}Login - {{ app_name }}{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid vh-100">
-    <div class="row h-100">
-        <div class="col-md-6 d-none d-md-flex bg-primary align-items-center justify-content-center">
-            <div class="text-white text-center">
-                <h1 class="display-4 fw-bold">{{ app_name }}</h1>
-                <p class="lead">Sistema Administrativo MVC Profissional</p>
-            </div>
+<div class="container">
+    <div class="auth-card">
+        <div class="logo-container">
+            <img src="{{ asset('assets/img/logo.svg') }}" alt="{{ app_name }}">
         </div>
         
-        <div class="col-md-6 d-flex align-items-center justify-content-center">
-            <div class="w-100" style="max-width: 400px;">
-                <div class="text-center mb-4">
-                    <h2 class="fw-bold">Bem-vindo</h2>
-                    <p class="text-muted">Entre com suas credenciais</p>
-                </div>
-                
-                <div id="alert-container"></div>
-                
-                <form id="loginForm">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Usuário</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Senha</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember">
-                        <label class="form-check-label" for="remember">Lembrar-me</label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary w-100 mb-3">Entrar</button>
-                    
-                    <div class="text-center">
-                        <a href="/forgot-password" class="text-decoration-none">Esqueceu a senha?</a>
-                    </div>
-                </form>
+        <div id="alert-container"></div>
+        
+        <form id="loginForm" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
+            <div class="input-group-custom">
+                <i class="bi bi-person-fill icon"></i>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Digite seu usuário" required autofocus>
             </div>
-        </div>
+            
+            <div class="input-group-custom">
+                <i class="bi bi-lock-fill icon"></i>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Digite sua senha" required>
+            </div>
+            
+            <div class="text-end mb-3">
+                <a href="{{ url('forgot-password') }}" class="forgot-link">Esqueceu a senha?</a>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-auth w-100">
+                <i class="bi bi-box-arrow-in-right"></i> Entrar
+            </button>
+        </form>
+    </div>
+    
+    <div class="footer-text">
+        © {{ "now"|date("Y") }} {{ app_name }} - Todos os direitos reservados.
     </div>
 </div>
 {% endblock %}
@@ -58,9 +51,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     
     const formData = new FormData(e.target);
     const alertContainer = document.getElementById('alert-container');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Entrando...';
     
     try {
-        const response = await fetch('/login', {
+        const response = await fetch('{{ url("login") }}', {
             method: 'POST',
             body: formData
         });
@@ -68,22 +65,34 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const data = await response.json();
         
         if (data.success) {
-            window.location.href = data.redirect;
-        } else {
             alertContainer.innerHTML = `
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    ${data.message}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> Login realizado com sucesso!
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 500);
+        } else {
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar';
         }
     } catch (error) {
         alertContainer.innerHTML = `
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                Erro ao processar login
+                <i class="bi bi-exclamation-triangle"></i> Erro ao processar login
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         `;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar';
     }
 });
 </script>

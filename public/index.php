@@ -38,8 +38,19 @@ function checkSystemInstalled() {
 
 // Redireciona para instalador se sistema não estiver instalado
 if (!checkSystemInstalled()) {
-    header('Location: /mvc08/public/install.php');
-    exit;
+    // Usa caminho relativo para funcionar em qualquer configuração
+    if (basename($_SERVER['PHP_SELF']) !== 'install.php') {
+        // Obtém o diretório base da aplicação
+        $baseDir = dirname($_SERVER['PHP_SELF']);
+        $installUrl = rtrim($baseDir, '/') . '/install.php';
+        header('Location: ' . $installUrl);
+        exit;
+    }
+}
+
+// Se chegou aqui mas não tem .env, algo está errado
+if (!file_exists(__DIR__ . '/../.env')) {
+    die('Erro: Sistema não instalado. <a href="install.php">Clique aqui para instalar</a>');
 }
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');

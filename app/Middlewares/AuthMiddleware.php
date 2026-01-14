@@ -21,7 +21,7 @@ class AuthMiddleware
         }
         
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login');
+            header('Location: ' . \App\Helpers\Url::to('login'));
             exit;
         }
         

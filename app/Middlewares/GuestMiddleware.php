@@ -21,7 +21,7 @@ class GuestMiddleware
         }
         
         if (isset($_SESSION['user_id'])) {
-            header('Location: /dashboard');
+            header('Location: ' . \App\Helpers\Url::to('dashboard'));
             exit;
         }
         

@@ -26,6 +26,15 @@ abstract class Controller
         // Adiciona variáveis globais
         $this->twig->addGlobal('app_name', $_ENV['APP_NAME']);
         $this->twig->addGlobal('app_url', $_ENV['APP_URL']);
+        
+        // Adiciona função URL para gerar links corretos
+        $this->twig->addFunction(new \Twig\TwigFunction('url', function($path = '') {
+            return \App\Helpers\Url::to($path);
+        }));
+        
+        $this->twig->addFunction(new \Twig\TwigFunction('asset', function($path) {
+            return \App\Helpers\Url::asset($path);
+        }));
     }
     
     /**

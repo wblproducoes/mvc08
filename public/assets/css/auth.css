@@ -1,0 +1,151 @@
+/**
+ * Estilos para páginas de autenticação (Login, Forgot Password, etc)
+ */
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 10px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.3);
+    max-width: 320px;
+    width: 100%;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.logo-container img {    
+    min-width: 200px;
+    max-width: 240px;
+    min-height: 100px;
+}
+
+.page-title {
+    text-align: center;
+    color: #1e3c72;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+.page-subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.input-group-custom {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group-custom .icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #1e3c72;
+    z-index: 10;
+}
+
+.input-group-custom input {
+    padding-left: 45px;
+    height: 50px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.input-group-custom input:focus {
+    border-color: #2a5298;
+    box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.15);
+    outline: none;
+}
+
+.btn-auth {
+    height: 50px;
+    border-radius: 10px;
+    background: #1e3c72;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    color: white;
+}
+
+.btn-auth:hover {
+    background: #2a5298;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
+    color: white;
+}
+
+.btn-auth:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.forgot-link {
+    color: #d97706;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.forgot-link:hover {
+    color: #b45309;
+}
+
+.back-link {
+    color: #1e3c72;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-link:hover {
+    color: #2a5298;
+}
+
+.footer-text {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    margin-top: 15px;
+}
+
+/* Responsividade */
+@media (max-width: 576px) {
+    .auth-card {
+        padding: 15px 10px;
+    }
+}

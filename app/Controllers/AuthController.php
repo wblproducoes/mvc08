@@ -55,7 +55,7 @@ class AuthController extends Controller
         $result = $this->authService->login($username, $password);
         
         if ($result['success']) {
-            $this->json(['success' => true, 'redirect' => '/dashboard']);
+            $this->json(['success' => true, 'redirect' => \App\Helpers\Url::to('dashboard')]);
         } else {
             $this->json(['success' => false, 'message' => $result['message']], 401);
         }
@@ -99,6 +99,6 @@ class AuthController extends Controller
     public function logout(): void
     {
         $this->authService->logout();
-        $this->redirect('/login');
+        $this->redirect(\App\Helpers\Url::to('login'));
     }
 }
