@@ -1,0 +1,55 @@
+{% set active_menu = 'levels' %}
+{% extends "default/pages/_crud_base.twig" %}
+{% block title %}{{ level is defined ? 'Editar' : 'Novo' }} Nível - {{ app_name }}{% endblock %}
+{% block main_content %}
+<div class="page-header"><div><h1>{{ level is defined ? 'Editar' : 'Novo' }} Nível</h1></div>
+<a href="{{ url('levels') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Voltar</a></div>
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if success %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> {{ success }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="card"><div class="card-body">
+<form method="POST" action="{{ level is defined ? url('levels/' ~ level.id) : url('levels') }}" id="levelForm" novalidate>
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+{% if level is defined %}<input type="hidden" name="_method" value="PUT">{% endif %}
+<div class="row">
+<div class="col-md-6"><div class="form-group"><label for="name">Nome (Inglês) *</label>
+<input type="text" class="form-control" id="name" name="name" value="{{ level.name ?? '' }}" required autofocus>
+<div class="invalid-feedback">Por favor, informe o nome</div></div></div>
+<div class="col-md-6"><div class="form-group"><label for="translate">Tradução *</label>
+<input type="text" class="form-control" id="translate" name="translate" value="{{ level.translate ?? '' }}" required>
+<div class="invalid-feedback">Por favor, informe a tradução</div></div></div>
+</div>
+<div class="form-group"><label for="description">Descrição</label>
+<input type="text" class="form-control" id="description" name="description" value="{{ level.description ?? '' }}">
+</div>
+<div class="form-actions">
+<button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Salvar</button>
+<a href="{{ url('levels') }}" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancelar</a>
+</div></form></div></div>
+{% endblock %}
+{% block page_scripts %}
+document.getElementById('levelForm').addEventListener('submit', function(e) {
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    let isValid = true;
+    const name = document.getElementById('name');
+    if (!name.value.trim()) { name.classList.add('is-invalid'); isValid = false; }
+    const translate = document.getElementById('translate');
+    if (!translate.value.trim()) { translate.classList.add('is-invalid'); isValid = false; }
+    if (!isValid) { e.preventDefault(); return false; }
+});
+document.querySelectorAll('#levelForm input').forEach(input => {
+    input.addEventListener('input', function() { if (this.classList.contains('is-invalid')) this.classList.remove('is-invalid'); });
+});
+{% endblock %}

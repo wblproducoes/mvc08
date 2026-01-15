@@ -6,9 +6,23 @@ use App\Config\Database;
 use PDO;
 
 /**
- * Model base
+ * Model Base
+ * 
+ * Classe abstrata que fornece métodos CRUD básicos para todos os models.
+ * Implementa soft delete (deleted_at) por padrão em todas as operações.
+ * 
+ * Métodos disponíveis:
+ * - all(): Busca todos os registros não deletados
+ * - count(): Conta registros não deletados
+ * - paginate(): Busca com paginação
+ * - find(): Busca por ID
+ * - create(): Cria novo registro
+ * - update(): Atualiza registro existente
+ * - delete(): Soft delete (marca como deletado)
  * 
  * @package App\Core
+ * @abstract
+ * @version 1.5.0
  */
 abstract class Model
 {
@@ -30,6 +44,32 @@ abstract class Model
     public function all(): array
     {
         $stmt = $this->db->query("SELECT * FROM {$this->prefix}{$this->table} WHERE deleted_at IS NULL");
+        return $stmt->fetchAll();
+    }
+    
+    /**
+     * Conta total de registros
+     * 
+     * @return int
+     */
+    public function count(): int
+    {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM {$this->prefix}{$this->table} WHERE deleted_at IS NULL");
+        $result = $stmt->fetch();
+        return (int) $result['total'];
+    }
+    
+    /**
+     * Busca registros com paginação
+     * 
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function paginate(int $limit = 10, int $offset = 0): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->prefix}{$this->table} WHERE deleted_at IS NULL ORDER BY id DESC LIMIT ? OFFSET ?");
+        $stmt->execute([$limit, $offset]);
         return $stmt->fetchAll();
     }
     

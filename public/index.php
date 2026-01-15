@@ -56,6 +56,18 @@ if (!file_exists(__DIR__ . '/../.env')) {
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
+// Headers de Segurança
+header('X-Frame-Options: DENY'); // Previne clickjacking
+header('X-Content-Type-Options: nosniff'); // Previne MIME sniffing
+header('X-XSS-Protection: 1; mode=block'); // Proteção XSS
+header('Referrer-Policy: strict-origin-when-cross-origin'); // Controla referrer
+header('Permissions-Policy: geolocation=(), microphone=(), camera=()'); // Permissões
+
+// Content Security Policy (CSP)
+if ($_ENV['APP_DEBUG'] !== 'true') {
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src 'self' https://cdn.jsdelivr.net;");
+}
+
 // Configurações de erro
 if ($_ENV['APP_DEBUG'] === 'true') {
     error_reporting(E_ALL);
@@ -63,15 +75,39 @@ if ($_ENV['APP_DEBUG'] === 'true') {
 } else {
     error_reporting(0);
     ini_set('display_errors', 0);
+    // Log de erros em produção
+    ini_set('log_errors', 1);
+    ini_set('error_log', __DIR__ . '/../storage/logs/php_errors.log');
 }
 
-// Configurações de sessão
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0); // Mudar para 1 em HTTPS
+// Configurações de sessão seguras
+ini_set('session.cookie_httponly', 1); // Previne acesso via JavaScript
+ini_set('session.use_only_cookies', 1); // Usa apenas cookies
+ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 1 : 0); // HTTPS
+ini_set('session.cookie_samesite', 'Strict'); // Proteção CSRF
+ini_set('session.use_strict_mode', 1); // Modo estrito
+ini_set('session.sid_length', 48); // ID de sessão mais longo
+ini_set('session.sid_bits_per_character', 6); // Mais bits por caractere
+
+// Regenera ID de sessão periodicamente
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+    if (!isset($_SESSION['created'])) {
+        $_SESSION['created'] = time();
+    } else if (time() - $_SESSION['created'] > 1800) { // 30 minutos
+        session_regenerate_id(true);
+        $_SESSION['created'] = time();
+    }
+}
 
 // Timezone
 date_default_timezone_set($_ENV['APP_TIMEZONE'] ?? 'America/Sao_Paulo');
+
+// Verifica integridade do sistema (usuário master existe)
+$integrityMiddleware = new \App\Middlewares\SystemIntegrityMiddleware();
+if (!$integrityMiddleware->handle()) {
+    exit; // Sistema bloqueado
+}
 
 // Carrega rotas
 $router = new Router();

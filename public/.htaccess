@@ -1,14 +1,93 @@
-RewriteEngine On
+# ============================================
+# CONFIGURAÇÃO DE ROTEAMENTO E SEGURANÇA
+# Sistema MVC08 - Colégio São Gonçalo
+# ============================================
 
-# Redireciona para HTTPS (descomente em produção)
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Desabilita listagem de diretórios
+Options -Indexes
 
-# Remove trailing slash
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)/$ /$1 [L,R=301]
+# Desabilita assinatura do servidor
+ServerSignature Off
 
-# Redireciona tudo para index.php
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
+# Protege arquivos sensíveis
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protege arquivos de configuração e código
+<FilesMatch "\.(env|json|lock|md|log|sql|sh|yml|yaml|ini|config|twig)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Permite apenas arquivos específicos
+<FilesMatch "\.(php|css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot|pdf)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Força HTTPS (descomente em produção)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # Remove trailing slash
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)/$ /$1 [L,R=301]
+    
+    # Bloqueia acesso direto a arquivos sensíveis
+    RewriteRule ^\.env - [F,L]
+    RewriteRule ^composer\.(json|lock) - [F,L]
+    RewriteRule ^\.git - [F,L]
+    
+    # Proteção contra injeção de código
+    RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} (\.\.\/|\.\.\\) [OR]
+    RewriteCond %{QUERY_STRING} (base64_encode|base64_decode) [NC,OR]
+    RewriteCond %{QUERY_STRING} (union.*select|insert.*into|drop.*table) [NC]
+    RewriteRule ^(.*)$ - [F,L]
+    
+    # Redireciona tudo para index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Headers de segurança adicionais
+<IfModule mod_headers.c>
+    # Previne clickjacking
+    Header always set X-Frame-Options "DENY"
+    
+    # Previne MIME sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Proteção XSS
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Remove informações do servidor
+    Header unset Server
+    Header unset X-Powered-By
+</IfModule>
+
+# Desabilita execução de PHP em uploads
+<Directory "uploads">
+    php_flag engine off
+    <FilesMatch "\.php$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</Directory>
+
+# Limita métodos HTTP
+<LimitExcept GET POST>
+    Order deny,allow
+    Deny from all
+</LimitExcept>

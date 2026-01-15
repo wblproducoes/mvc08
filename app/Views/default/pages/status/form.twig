@@ -1,0 +1,137 @@
+{% set active_menu = 'status' %}
+{% extends "default/pages/_crud_base.twig" %}
+
+{% block title %}{{ status is defined ? 'Editar' : 'Novo' }} Status - {{ app_name }}{% endblock %}
+
+{% block main_content %}
+<div class="page-header">
+    <div>
+        <h1>{{ status is defined ? 'Editar' : 'Novo' }} Status</h1>
+    </div>
+    <a href="{{ url('status') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if success %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> {{ success }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{{ status is defined ? url('status/' ~ status.id) : url('status') }}" id="statusForm" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% if status is defined %}<input type="hidden" name="_method" value="PUT">{% endif %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name">Nome (Inglês) *</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ status.name ?? '' }}" required autofocus>
+                        <div class="invalid-feedback">Por favor, informe o nome</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="translate">Tradução *</label>
+                        <input type="text" class="form-control" id="translate" name="translate" value="{{ status.translate ?? '' }}" required>
+                        <div class="invalid-feedback">Por favor, informe a tradução</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="color">Cor *</label>
+                        <select class="form-control" id="color" name="color" required>
+                            <option value="primary" {{ (status.color ?? '') == 'primary' ? 'selected' : '' }}>Azul (Primary)</option>
+                            <option value="secondary" {{ (status.color ?? 'secondary') == 'secondary' ? 'selected' : '' }}>Cinza (Secondary)</option>
+                            <option value="success" {{ (status.color ?? '') == 'success' ? 'selected' : '' }}>Verde (Success)</option>
+                            <option value="danger" {{ (status.color ?? '') == 'danger' ? 'selected' : '' }}>Vermelho (Danger)</option>
+                            <option value="warning" {{ (status.color ?? '') == 'warning' ? 'selected' : '' }}>Amarelo (Warning)</option>
+                            <option value="info" {{ (status.color ?? '') == 'info' ? 'selected' : '' }}>Azul Claro (Info)</option>
+                        </select>
+                        <div class="invalid-feedback">Por favor, selecione uma cor</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="description">Descrição</label>
+                        <input type="text" class="form-control" id="description" name="description" value="{{ status.description ?? '' }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Salvar
+                </button>
+                <a href="{{ url('status') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+document.getElementById('statusForm').addEventListener('submit', function(e) {
+    // Remove validações anteriores
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    let isValid = true;
+    
+    // Valida name
+    const name = document.getElementById('name');
+    if (!name.value.trim()) {
+        name.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    // Valida translate
+    const translate = document.getElementById('translate');
+    if (!translate.value.trim()) {
+        translate.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    // Valida color
+    const color = document.getElementById('color');
+    if (!color.value) {
+        color.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    // Se não for válido, previne o envio
+    if (!isValid) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Remove erro ao digitar
+document.querySelectorAll('#statusForm input, #statusForm select').forEach(input => {
+    input.addEventListener('input', function() {
+        if (this.classList.contains('is-invalid')) {
+            this.classList.remove('is-invalid');
+        }
+    });
+    input.addEventListener('change', function() {
+        if (this.classList.contains('is-invalid')) {
+            this.classList.remove('is-invalid');
+        }
+    });
+});
+{% endblock %}

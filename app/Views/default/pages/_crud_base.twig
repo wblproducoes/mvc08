@@ -1,13 +1,11 @@
 {% extends "default/layout.twig" %}
 
-{% block title %}Dashboard - {{ app_name }}{% endblock %}
-
 {% block styles %}
-<link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}?v=4">
+<link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}?v=3">
+<link rel="stylesheet" href="{{ asset('assets/css/users.css') }}">
 {% endblock %}
 
 {% block content %}
-<!-- Topbar -->
 <div class="topbar">
     <div class="topbar-left">
         <i class="bi bi-list menu-toggle" onclick="toggleSidebar()"></i>
@@ -45,12 +43,11 @@
     </div>
 </div>
 
-<!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
     <nav class="sidebar-nav">
         <div class="nav-section">
             <div class="nav-section-title">Menu Principal</div>
-            <a class="nav-link active" href="{{ url('dashboard') }}">
+            <a class="nav-link" href="{{ url('dashboard') }}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
         </div>
@@ -61,13 +58,13 @@
                 <i class="bi bi-chevron-down nav-arrow"></i>
             </a>
             <div class="nav-submenu">
-                <a class="nav-link nav-sublink" href="{{ url('users') }}">
+                <a class="nav-link nav-sublink {{ active_menu == 'users' ? 'active' : '' }}" href="{{ url('users') }}">
                     <i class="bi bi-people"></i> Usuários
                 </a>
-                <a class="nav-link nav-sublink" href="{{ url('status') }}">
+                <a class="nav-link nav-sublink {{ active_menu == 'status' ? 'active' : '' }}" href="{{ url('status') }}">
                     <i class="bi bi-circle"></i> Status
                 </a>
-                <a class="nav-link nav-sublink" href="{{ url('levels') }}">
+                <a class="nav-link nav-sublink {{ active_menu == 'levels' ? 'active' : '' }}" href="{{ url('levels') }}">
                     <i class="bi bi-shield"></i> Níveis
                 </a>
                 <a class="nav-link nav-sublink" href="{{ url('settings') }}">
@@ -78,12 +75,8 @@
     </nav>
 </aside>
 
-<!-- Main Content -->
 <main class="main-content">
-    <div class="page-header">
-        <h1>Dashboard</h1>
-        <p class="page-subtitle">Bem-vindo ao painel administrativo do Colégio São Gonçalo</p>
-    </div>
+    {% block main_content %}{% endblock %}
 </main>
 
 <script>
@@ -98,15 +91,7 @@ function toggleSidebar() {
 function toggleSubmenu(element) {
     const submenu = element.nextElementSibling;
     const arrow = element.querySelector('.nav-arrow');
-    
-    console.log('Antes:', submenu.classList.contains('show'));
-    
-    // Toggle submenu
     submenu.classList.toggle('show');
-    
-    console.log('Depois:', submenu.classList.contains('show'));
-    
-    // Rotate arrow
     arrow.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
@@ -119,11 +104,6 @@ window.onclick = function(event) {
     }
 }
 
-// Debug: Verificar estado inicial
-document.addEventListener('DOMContentLoaded', function() {
-    const submenu = document.querySelector('.nav-submenu');
-    console.log('Estado inicial do submenu:', submenu.classList.contains('show'));
-    console.log('Classes do submenu:', submenu.className);
-});
+{% block page_scripts %}{% endblock %}
 </script>
 {% endblock %}

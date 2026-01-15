@@ -4,6 +4,20 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+<style>
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -13,19 +27,33 @@
             <img src="{{ asset('assets/img/logo.svg') }}" alt="{{ app_name }}">
         </div>
         
-        <div id="alert-container"></div>
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
         
-        <form id="loginForm" novalidate>
+        {% if success %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{{ url('login') }}" id="loginForm" novalidate>
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             
             <div class="input-group-custom">
                 <i class="bi bi-person-fill icon"></i>
                 <input type="text" class="form-control" id="username" name="username" placeholder="Digite seu usuário" required autofocus>
+                <div class="invalid-feedback">Por favor, informe seu usuário</div>
             </div>
             
             <div class="input-group-custom">
                 <i class="bi bi-lock-fill icon"></i>
                 <input type="password" class="form-control" id="password" name="password" placeholder="Digite sua senha" required>
+                <div class="invalid-feedback">Por favor, informe sua senha</div>
             </div>
             
             <div class="text-end mb-3">
@@ -46,54 +74,40 @@
 
 {% block scripts %}
 <script>
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    // Remove validações anteriores
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     
-    const formData = new FormData(e.target);
-    const alertContainer = document.getElementById('alert-container');
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+    let isValid = true;
     
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Entrando...';
-    
-    try {
-        const response = await fetch('{{ url("login") }}', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alertContainer.innerHTML = `
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> Login realizado com sucesso!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-            setTimeout(() => {
-                window.location.href = data.redirect;
-            }, 500);
-        } else {
-            alertContainer.innerHTML = `
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i> ${data.message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar';
-        }
-    } catch (error) {
-        alertContainer.innerHTML = `
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle"></i> Erro ao processar login
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar';
+    // Valida username
+    const username = document.getElementById('username');
+    if (!username.value.trim()) {
+        username.classList.add('is-invalid');
+        isValid = false;
     }
+    
+    // Valida password
+    const password = document.getElementById('password');
+    if (!password.value.trim()) {
+        password.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    // Se não for válido, previne o envio
+    if (!isValid) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Remove erro ao digitar
+document.querySelectorAll('#loginForm input').forEach(input => {
+    input.addEventListener('input', function() {
+        if (this.classList.contains('is-invalid')) {
+            this.classList.remove('is-invalid');
+        }
+    });
 });
 </script>
 {% endblock %}

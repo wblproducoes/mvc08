@@ -1,0 +1,30 @@
+{% if pagination.total_pages > 1 %}
+<nav class="pagination-container">
+    <div class="pagination-info">
+        Mostrando página {{ pagination.current_page }} de {{ pagination.total_pages }} 
+        ({{ pagination.total_items }} registros)
+    </div>
+    <ul class="pagination">
+        {# Botão Anterior #}
+        <li class="page-item {{ not pagination.has_previous ? 'disabled' : '' }}">
+            <a class="page-link" href="?page={{ pagination.previous_page }}" {{ not pagination.has_previous ? 'tabindex="-1"' : '' }}>
+                <i class="bi bi-chevron-left"></i> Anterior
+            </a>
+        </li>
+        
+        {# Números das páginas #}
+        {% for page in pagination.pages %}
+        <li class="page-item {{ page == pagination.current_page ? 'active' : '' }}">
+            <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+        </li>
+        {% endfor %}
+        
+        {# Botão Próximo #}
+        <li class="page-item {{ not pagination.has_next ? 'disabled' : '' }}">
+            <a class="page-link" href="?page={{ pagination.next_page }}" {{ not pagination.has_next ? 'tabindex="-1"' : '' }}>
+                Próximo <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}

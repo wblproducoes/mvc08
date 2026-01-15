@@ -1,0 +1,82 @@
+{% set active_menu = 'status' %}
+{% extends "default/pages/_crud_base.twig" %}
+
+{% block title %}Lixeira de Status - {{ app_name }}{% endblock %}
+
+{% block main_content %}
+<div class="page-header">
+    <div>
+        <h1>Lixeira de Status</h1>
+        <p class="page-subtitle">Itens deletados</p>
+    </div>
+    <a href="{{ url('status') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if success %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> {{ success }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Tradução</th>
+                        <th>Cor</th>
+                        <th>Deletado em</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if statuses|length > 0 %}
+                        {% for status in statuses %}
+                        <tr>
+                            <td>{{ status.id }}</td>
+                            <td>{{ status.name }}</td>
+                            <td>
+                                <span class="badge badge-{{ status.color }}">{{ status.translate }}</span>
+                            </td>
+                            <td>{{ status.color }}</td>
+                            <td>{{ status.deleted_at|date('d/m/Y H:i') }}</td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ url('status/' ~ status.id ~ '/restore') }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-sm btn-success" title="Restaurar">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url('status/' ~ status.id ~ '/force-delete') }}" style="display: inline;" onsubmit="return confirm('Tem certeza? Esta ação é PERMANENTE e não pode ser desfeita!');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Deletar permanentemente">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Nenhum item na lixeira</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% set active_menu = 'status' %}
+{% extends "default/pages/_crud_base.twig" %}
+
+{% block title %}Status - {{ app_name }}{% endblock %}
+
+{% block main_content %}
+<div class="page-header">
+    <div>
+        <h1>Status</h1>
+        <p class="page-subtitle">Gerencie os status do sistema</p>
+    </div>
+    <div>
+        <a href="{{ url('status/trash') }}" class="btn btn-secondary me-2">
+            <i class="bi bi-trash"></i> Lixeira
+        </a>
+        <a href="{{ url('status/create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Novo Status
+        </a>
+    </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if success %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> {{ success }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <form method="GET" action="{{ url('status') }}" class="mb-3">
+            <div class="row">
+                <div class="col-md-10">
+                    <input type="text" class="form-control" name="search" placeholder="Pesquisar por nome ou tradução..." value="{{ search ?? '' }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Tradução</th>
+                        <th>Cor</th>
+                        <th>Descrição</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if statuses|length > 0 %}
+                        {% for status in statuses %}
+                        <tr>
+                            <td>{{ status.id }}</td>
+                            <td>{{ status.name }}</td>
+                            <td>
+                                <span class="badge badge-{{ status.color }}">{{ status.translate }}</span>
+                                <!-- Debug: {{ status.translate|default('SEM TRADUÇÃO') }} -->
+                            </td>
+                            <td>{{ status.color }}</td>
+                            <td>{{ status.description }}</td>
+                            <td class="text-end">
+                                <a href="{{ url('status/' ~ status.id ~ '/edit') }}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="POST" action="{{ url('status/' ~ status.id) }}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja deletar este status?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Nenhum status encontrado</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% include 'default/components/pagination.twig' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+// Script removido - exclusão agora é via formulário POST tradicional
+{% endblock %}

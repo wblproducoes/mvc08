@@ -1,0 +1,237 @@
+{% extends "default/layout.twig" %}
+
+{% block title %}Usuários - {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}?v=3">
+<link rel="stylesheet" href="{{ asset('assets/css/users.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+    <div class="topbar-left">
+        <i class="bi bi-list menu-toggle" onclick="toggleSidebar()"></i>
+        <div class="topbar-logo">
+            <img src="{{ asset('assets/img/logo.svg') }}" alt="{{ app_name }}">
+        </div>
+    </div>
+    <div class="topbar-right">
+        <div class="topbar-icon">
+            <i class="bi bi-bell"></i>
+            <span class="badge"></span>
+        </div>
+        <div class="user-menu">
+            <div class="user-info" onclick="toggleDropdown()">
+                <div class="user-avatar">{{ user.name|slice(0, 1)|upper }}</div>
+                <div class="user-details">
+                    <div class="user-name">{{ user.name }}</div>
+                    <div class="user-role">Administrador</div>
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu" id="userDropdown">
+                <a class="dropdown-item" href="{{ url('profile') }}">
+                    <i class="bi bi-person"></i> Meu Perfil
+                </a>
+                <a class="dropdown-item" href="{{ url('settings') }}">
+                    <i class="bi bi-gear"></i> Configurações
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{{ url('logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-title">Menu Principal</div>
+            <a class="nav-link" href="{{ url('dashboard') }}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Sistema</div>
+            <a class="nav-link nav-dropdown active" href="javascript:void(0)" onclick="toggleSubmenu(this)">
+                <i class="bi bi-gear"></i> Configurações
+                <i class="bi bi-chevron-down nav-arrow" style="transform: rotate(180deg);"></i>
+            </a>
+            <div class="nav-submenu show">
+                <a class="nav-link nav-sublink active" href="{{ url('users') }}">
+                    <i class="bi bi-people"></i> Usuários
+                </a>
+                <a class="nav-link nav-sublink" href="{{ url('settings') }}">
+                    <i class="bi bi-sliders"></i> Geral
+                </a>
+            </div>
+        </div>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="page-header">
+        <div>
+            <h1>Usuários</h1>
+            <p class="page-subtitle">Gerencie os usuários do sistema</p>
+        </div>
+        <div>
+            <a href="{{ url('users/trash') }}" class="btn btn-secondary me-2">
+                <i class="bi bi-trash"></i> Lixeira
+            </a>
+            <a href="{{ url('users/create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Novo Usuário
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="GET" action="{{ url('users') }}" class="mb-3">
+                <div class="row">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="search" placeholder="Nome ou e-mail..." value="{{ search ?? '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-control" name="status_id">
+                            <option value="">Todos os status</option>
+                            {% for status in all_statuses %}
+                            <option value="{{ status.id }}" {{ (filters.status_id ?? '') == status.id ? 'selected' : '' }}>{{ status.translate }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-control" name="level_id">
+                            <option value="">Todos os níveis</option>
+                            {% for level in all_levels %}
+                            <option value="{{ level.id }}" {{ (filters.level_id ?? '') == level.id ? 'selected' : '' }}>{{ level.translate }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>Status</th>
+                            <th>Nível</th>
+                            <th>Criado em</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if users|length > 0 %}
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>
+                                    <span class="badge badge-{{ user.status_id == 1 ? 'success' : 'secondary' }}">
+                                        {{ user.status_name }}
+                                    </span>
+                                </td>
+                                <td>{{ user.level_name }}</td>
+                                <td>{{ user.dh|date('d/m/Y H:i') }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url('users/' ~ user.id ~ '/edit') }}" class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% if user.id != 1 %}
+                                    <button onclick="deleteUser({{ user.id }})" class="btn btn-sm btn-danger" title="Deletar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-secondary" title="Usuário protegido" disabled>
+                                        <i class="bi bi-shield-lock"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center">Nenhum usuário encontrado</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% include 'default/components/pagination.twig' %}
+        </div>
+    </div>
+</main>
+
+<script>
+function toggleDropdown() {
+    document.getElementById('userDropdown').classList.toggle('show');
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+}
+
+function toggleSubmenu(element) {
+    const submenu = element.nextElementSibling;
+    const arrow = element.querySelector('.nav-arrow');
+    submenu.classList.toggle('show');
+    arrow.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function deleteUser(id) {
+    if (!confirm('Tem certeza que deseja deletar este usuário?')) {
+        return;
+    }
+    
+    fetch('{{ url('users') }}/' + id, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            csrf_token: '{{ csrf_token }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao deletar usuário');
+        console.error(error);
+    });
+}
+
+window.onclick = function(event) {
+    if (!event.target.closest('.user-menu')) {
+        var dropdown = document.getElementById('userDropdown');
+        if (dropdown && dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        }
+    }
+}
+</script>
+{% endblock %}
