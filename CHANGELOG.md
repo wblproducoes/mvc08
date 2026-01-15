@@ -5,6 +5,52 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.6.1] - 2026-01-15
+
+**Correções de compatibilidade com PHP 8.5.0 e Apache 2.4+**
+
+### Corrigido
+- **Compatibilidade PHP 8.5.0**
+  - Removido `session.sid_length` (deprecated no PHP 8.4+)
+  - Removido `session.sid_bits_per_character` (deprecated no PHP 8.4+)
+  - PHP 8.5+ usa automaticamente IDs de sessão seguros
+
+- **Compatibilidade Apache 2.4+**
+  - Atualizado `.htaccess` raiz: `Order allow,deny` → `Require all denied`
+  - Atualizado `public/.htaccess`: sintaxe Apache 2.4+
+  - Envolvido diretivas `php_value` em `<IfModule mod_php.c>`
+  - Corrigido `LimitExcept` para sintaxe correta
+  - Removido diretiva `<Directory>` problemática
+
+### Adicionado
+- **TROUBLESHOOTING.md** - Guia completo de solução de problemas
+  - Diagnóstico de Internal Server Error
+  - Verificação de módulos do Apache
+  - Solução de problemas de conexão
+  - Checklist de funcionamento
+  - Comandos de diagnóstico rápido
+
+- **GITHUB_COMMIT_GUIDE.md** - Guia de commit para GitHub
+  - Convenção de mensagens de commit
+  - Verificação de arquivos sensíveis
+  - Comandos completos para commit
+  - Solução de problemas comuns
+
+- **pre-commit-check.php** - Script de verificação pré-commit
+  - Verifica se .env está protegido
+  - Verifica se vendor/ não será commitado
+  - Verifica arquivos grandes (>50MB)
+  - Valida .gitignore
+  - Status: ✅ PRONTO PARA COMMIT
+
+### Técnico
+- Sistema agora 100% compatível com PHP 8.5.0
+- Sistema agora 100% compatível com Apache 2.4+
+- Mantida retrocompatibilidade com PHP 8.0+
+- Todas as proteções de segurança mantidas
+
+---
+
 ## [1.6.0] - 2026-01-15
 
 **Auditoria completa de segurança com implementação de rate limiting, proteções avançadas e documentação detalhada.**

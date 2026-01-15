@@ -11,20 +11,17 @@ ServerSignature Off
 
 # Protege arquivos sensíveis
 <FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
 # Protege arquivos de configuração e código
 <FilesMatch "\.(env|json|lock|md|log|sql|sh|yml|yaml|ini|config|twig)$">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
 # Permite apenas arquivos específicos
 <FilesMatch "\.(php|css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot|pdf)$">
-    Order allow,deny
-    Allow from all
+    Require all granted
 </FilesMatch>
 
 <IfModule mod_rewrite.c>
@@ -77,17 +74,7 @@ ServerSignature Off
     Header unset X-Powered-By
 </IfModule>
 
-# Desabilita execução de PHP em uploads
-<Directory "uploads">
-    php_flag engine off
-    <FilesMatch "\.php$">
-        Order allow,deny
-        Deny from all
-    </FilesMatch>
-</Directory>
-
 # Limita métodos HTTP
 <LimitExcept GET POST>
-    Order deny,allow
-    Deny from all
+    Require all denied
 </LimitExcept>

@@ -86,8 +86,8 @@ ini_set('session.use_only_cookies', 1); // Usa apenas cookies
 ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 1 : 0); // HTTPS
 ini_set('session.cookie_samesite', 'Strict'); // Proteção CSRF
 ini_set('session.use_strict_mode', 1); // Modo estrito
-ini_set('session.sid_length', 48); // ID de sessão mais longo
-ini_set('session.sid_bits_per_character', 6); // Mais bits por caractere
+// session.sid_length e session.sid_bits_per_character foram removidos no PHP 8.4+
+// O PHP 8.4+ usa automaticamente IDs de sessão seguros
 
 // Regenera ID de sessão periodicamente
 if (session_status() === PHP_SESSION_NONE) {

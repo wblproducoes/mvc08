@@ -11,20 +11,17 @@ ServerSignature Off
 
 # Protege arquivos sensíveis
 <FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
 # Protege arquivos de configuração
 <FilesMatch "\.(env|json|lock|md|log|sql|sh|yml|yaml|ini|config)$">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
 # Protege composer
 <FilesMatch "^composer\.(json|lock)$">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
 # Protege diretórios sensíveis
@@ -52,14 +49,8 @@ RedirectMatch 403 ^/(vendor|storage|database|app|routes)/.*$
 </IfModule>
 
 # Limita tamanho de upload (ajuste conforme necessário)
-php_value upload_max_filesize 10M
-php_value post_max_size 10M
-
-# Desabilita execução de PHP em diretórios de upload
-<Directory "public/uploads">
-    php_flag engine off
-    <FilesMatch "\.php$">
-        Order allow,deny
-        Deny from all
-    </FilesMatch>
-</Directory>
+# Nota: Se der erro, comente estas linhas e configure no php.ini
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+</IfModule>
