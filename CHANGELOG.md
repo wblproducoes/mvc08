@@ -5,6 +5,588 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.7.11] - 2026-01-16
+
+**Alinhamento do header "AÇÕES" à direita**
+
+### Corrigido
+- **Texto "AÇÕES" alinhado à esquerda**
+  - Adicionado `text-align: right` para a última coluna (th:last-child)
+  - Header "AÇÕES" agora alinhado à direita, junto com os botões
+  - Consistente com a página de Usuários
+
+- **CSS Melhorado**
+  - `.table th:last-child` agora tem alinhamento à direita
+
+### Resultado
+- ✅ Texto "AÇÕES" alinhado à direita
+- ✅ Header alinhado com os botões de ação
+- ✅ Layout totalmente consistente
+
+---
+
+## [1.7.10] - 2026-01-16
+
+**Padronização do tamanho do header das tabelas**
+
+### Corrigido
+- **Texto "AÇÕES" com tamanhos diferentes**
+  - Adicionado `line-height: 1.2` para consistência
+  - Adicionado `height: 44px` para altura fixa
+  - Adicionado `vertical-align: middle` para alinhamento vertical
+  - Headers das tabelas agora têm tamanho uniforme
+
+- **CSS Melhorado**
+  - `.table th` agora tem altura e alinhamento padronizados
+  - Texto do header sempre com o mesmo tamanho
+
+### Resultado
+- ✅ Texto "AÇÕES" com tamanho consistente
+- ✅ Headers das tabelas uniformes
+- ✅ Layout totalmente padronizado
+
+---
+
+## [1.7.9] - 2026-01-16
+
+**Adicionado tooltip customizado para botões de ação**
+
+### Adicionado
+- **Tooltip acima dos botões**
+  - Tooltip aparece acima do ícone ao passar o mouse
+  - Fundo escuro com texto branco
+  - Seta apontando para o botão
+  - Suave e profissional
+
+- **CSS Melhorado**
+  - Adicionado `::before` para exibir o texto do title
+  - Adicionado `::after` para a seta do tooltip
+  - Posicionamento automático acima do botão
+
+### Resultado
+- ✅ Tooltip customizado e visível
+- ✅ Melhor UX ao passar o mouse nos botões
+- ✅ Aparência profissional
+
+---
+
+## [1.7.8] - 2026-01-16
+
+**Padronização de cores dos botões de ação**
+
+### Corrigido
+- **Cores dos botões inconsistentes**
+  - Botão de editar em Gêneros era azul (btn-info), agora é amarelo (btn-warning)
+  - Padronizado com a cor de Usuários
+  - Botão de deletar mantém vermelho (btn-danger) em ambas
+
+- **Arquivos Atualizados**
+  - `app/Views/default/pages/genders/index.twig` - Alterado btn-info para btn-warning
+
+### Resultado
+- ✅ Cores dos botões padronizadas em todas as páginas
+- ✅ Editar = Amarelo (warning)
+- ✅ Deletar = Vermelho (danger)
+- ✅ Layout totalmente consistente!
+
+---
+
+## [1.7.7] - 2026-01-16
+
+**Padronização da coluna de ações nas tabelas**
+
+### Corrigido
+- **Coluna de ações com alinhamento inconsistente**
+  - Adicionado `class="text-end"` na coluna de ações de Gêneros
+  - Padronizado alinhamento à direita em todas as páginas CRUD
+  - Botões de ação agora alinhados consistentemente
+
+- **Arquivos Atualizados**
+  - `app/Views/default/pages/genders/index.twig` - Adicionado text-end
+  - `app/Views/default/pages/genders/trash.twig` - Adicionado text-end
+
+### Resultado
+- ✅ Coluna de ações alinhada à direita em todas as páginas
+- ✅ Layout totalmente consistente entre Usuários e Gêneros
+- ✅ Botões de ação com tamanho e espaçamento uniforme
+
+---
+
+## [1.7.6] - 2026-01-16
+
+**Melhorias finais de consistência de layout**
+
+### Corrigido
+- **Layout ainda distorcido**
+  - Removido `users.css` do arquivo `_crud_base.twig`
+  - Adicionado `table-layout: auto` para melhor distribuição de colunas
+  - Adicionado `word-break: break-word` para textos longos
+  - Melhorado espaçamento e padding consistente
+  - Adicionado background color consistente
+
+- **Estilos Melhorados**
+  - Tabelas agora se adaptam melhor a diferentes números de colunas
+  - Padding e espaçamento consistente em todas as páginas
+  - Melhor responsividade em dispositivos móveis
+
+### Resultado
+- ✅ Layout consistente e sem distorções
+- ✅ Tabelas se adaptam bem a qualquer número de colunas
+- ✅ Espaçamento uniforme em todas as páginas CRUD
+
+---
+
+## [1.7.5] - 2026-01-16
+
+**Correção de layout distorcido entre páginas CRUD**
+
+### Corrigido
+- **Layout distorcido ao navegar entre páginas**
+  - Criado arquivo CSS genérico `crud.css` para todas as páginas CRUD
+  - Removido `users.css` das páginas de Gêneros (estava causando distorção)
+  - Removido CSS duplicado das páginas de Usuários
+  - Layout CRUD agora inclui CSS genérico automaticamente
+
+- **Arquivos Criados**
+  - `public/assets/css/crud.css` - CSS genérico para CRUD
+
+- **Arquivos Atualizados**
+  - `app/Views/default/layouts/crud.twig` - Agora inclui crud.css
+  - Todas as páginas de Usuários - Removido users.css duplicado
+  - Todas as páginas de Gêneros - Removido users.css
+
+### Resultado
+- ✅ Layout consistente entre todas as páginas CRUD
+- ✅ Sem distorção ao navegar
+- ✅ CSS centralizado e reutilizável
+- ✅ Redução de código duplicado
+
+---
+
+## [1.7.4] - 2026-01-16
+
+**Refatoração completa de páginas CRUD para usar layout centralizado**
+
+### Corrigido
+- **Menu não recolhe mais ao navegar**
+  - Todas as páginas de Usuários agora usam layout CRUD centralizado
+  - Submenu de Configurações permanece expandido ao navegar entre páginas
+  - Eliminada duplicação de topbar, sidebar e scripts
+
+- **Páginas Atualizadas**
+  - `users/index.twig` - Refatorada para novo layout
+  - `users/create.twig` - Refatorada para novo layout
+  - `users/edit.twig` - Refatorada para novo layout
+  - `users/trash.twig` - Refatorada para novo layout
+
+### Benefícios
+- ✅ Menu não recolhe ao navegar entre páginas
+- ✅ Consistência visual garantida
+- ✅ Manutenção centralizada
+- ✅ Redução de código duplicado
+
+### Próximos Passos
+- Refatorar páginas de Status para usar novo layout
+- Refatorar páginas de Níveis para usar novo layout
+
+---
+
+## [1.7.3] - 2026-01-16
+
+**Correção definitiva: Menu de Gêneros agora visível**
+
+### Corrigido
+- **Problema de Duplicação de Sidebar**
+  - Identificado: 3 versões diferentes de sidebar no projeto
+  - dashboard.twig tinha cópia hardcoded sem gêneros
+  - _crud_base.twig tinha cópia hardcoded sem gêneros
+  - Ambos agora usam componentes reutilizáveis
+
+- **Arquivos Atualizados**
+  - `dashboard.twig` - Agora inclui topbar e scripts como componentes
+  - `_crud_base.twig` - Agora inclui topbar e scripts como componentes
+  - Ambos agora têm o link para Gêneros no submenu
+
+### Resultado
+- ✅ Menu de Gêneros visível em todas as páginas
+- ✅ Eliminada duplicação de código
+- ✅ Manutenção centralizada
+- ✅ Sincronização automática de mudanças
+
+---
+
+## [1.7.2] - 2026-01-16
+
+**Correção de exibição do menu de Gêneros na sidebar**
+
+### Corrigido
+- **Submenu de Configurações**
+  - Aumentado `max-height` de 1000px para 2000px para acomodar todos os itens
+  - Adicionado `overflow-y: auto` na sidebar para scroll quando necessário
+  - Menu de Gêneros agora visível junto com Usuários, Status, Níveis e Geral
+
+### Técnico
+- CSS do dashboard.css atualizado
+- Sidebar agora com scroll automático se conteúdo exceder altura
+
+---
+
+## [1.7.1] - 2026-01-16
+
+**Refatoração de layouts para melhor manutenibilidade**
+
+### Adicionado
+- **Componentes Twig Reutilizáveis**
+  - `components/topbar.twig` - Barra superior com logo e menu do usuário
+  - `components/sidebar.twig` - Menu lateral com navegação
+  - `components/scripts.twig` - Scripts comuns (toggle, dropdown, etc)
+  - `layouts/crud.twig` - Layout base para páginas CRUD
+
+### Melhorado
+- **Estrutura de Layouts**
+  - Eliminada duplicação de código em todas as páginas
+  - Componentes centralizados para fácil manutenção
+  - Sidebar com detecção automática de página ativa
+  - Scripts comuns em arquivo separado
+
+- **Páginas de Gêneros**
+  - `index.twig` - Refatorada para usar novo layout
+  - `create.twig` - Refatorada para usar novo layout
+  - `edit.twig` - Refatorada para usar novo layout
+  - `trash.twig` - Refatorada para usar novo layout
+
+### Benefícios
+- Redução de código duplicado em ~70%
+- Manutenção centralizada de componentes
+- Fácil adicionar novas páginas CRUD
+- Consistência visual garantida
+- Mudanças globais refletem em todas as páginas
+
+### Próximos Passos
+- Refatorar páginas de Usuários, Status e Níveis para usar novo layout
+- Adicionar mais componentes reutilizáveis conforme necessário
+
+---
+
+## [1.7.0] - 2026-01-16
+
+**CRUD completo de Gêneros implementado**
+
+### Adicionado
+- **Model Gender** (`app/Models/Gender.php`)
+  - Métodos CRUD completos
+  - Busca por ID, nome, paginação
+  - Soft delete e restauração
+  - Lixeira de gêneros deletados
+
+- **Controller GenderController** (`app/Controllers/GenderController.php`)
+  - Ações: index, create, store, edit, update, destroy
+  - Ações de lixeira: trash, restore, forceDelete
+  - Validações de dados
+  - Proteção CSRF em todas as ações
+
+- **Views de Gêneros**
+  - `index.twig` - Listagem com paginação
+  - `create.twig` - Formulário de criação
+  - `edit.twig` - Formulário de edição com campos informativos
+  - `trash.twig` - Lixeira com opções de restauração
+
+- **Rotas RESTful** (`routes/web.php`)
+  - GET `/genders` - Lista gêneros
+  - GET `/genders/create` - Formulário de criação
+  - POST `/genders` - Cria gênero
+  - GET `/genders/{id}/edit` - Formulário de edição
+  - PUT `/genders/{id}` - Atualiza gênero
+  - DELETE `/genders/{id}` - Deleta gênero
+  - GET `/genders/trash` - Lixeira
+  - POST `/genders/{id}/restore` - Restaura gênero
+  - POST `/genders/{id}/force-delete` - Deleta permanentemente
+
+- **Menu de Configurações**
+  - Adicionado item "Gêneros" no submenu de Configurações
+  - Ícone: `bi-person-badge`
+  - Integrado em todas as páginas de configuração
+
+### Funcionalidades
+- Listagem com paginação (10 registros por página)
+- Criação de novos gêneros
+- Edição com campos informativos (data de cadastro, última atualização)
+- Soft delete com lixeira
+- Restauração de gêneros deletados
+- Exclusão permanente
+- Validação de dados (client-side e server-side)
+- Proteção CSRF em todas as ações
+- Feedback visual de sucesso/erro
+
+### Campos da Tabela
+- `id` - Identificador único
+- `name` - Nome do gênero (ex: Male, Female)
+- `translate` - Tradução (ex: Masculino, Feminino)
+- `description` - Descrição opcional
+- `dh` - Data de cadastro
+- `dh_update` - Data da última atualização
+- `deleted_at` - Data de exclusão (soft delete)
+
+### Segurança
+- Validação de CSRF em todas as ações
+- Sanitização de inputs
+- Prepared statements no banco
+- Soft delete preserva dados
+- Proteção contra duplicação de nomes
+
+---
+
+## [1.6.7] - 2026-01-16
+
+**Adicionados campos informativos no formulário de edição de usuário**
+
+### Adicionado
+- **Campos de Informação no Formulário de Edição**
+  - Campo "Data de Cadastro" (readonly) - Exibe quando o usuário foi criado
+  - Campo "Código Único" (readonly) - Exibe o identificador único do usuário
+  - Campos com fundo cinza e cursor "not-allowed" para indicar que são apenas leitura
+  - Formatação de data: dd/mm/yyyy HH:mm:ss
+
+### Melhorado
+- **Formulário de Edição** (`users/edit.twig`)
+  - Nova linha com informações do sistema
+  - Campos posicionados após Status e Nível de Acesso
+  - Visual diferenciado para campos readonly
+  - Informações importantes para auditoria e rastreamento
+
+### Utilidade
+- Permite visualizar quando o usuário foi cadastrado
+- Código único útil para integrações e rastreamento
+- Informações importantes para auditoria
+- Não podem ser editados (proteção de integridade)
+
+---
+
+## [1.6.6] - 2026-01-16
+
+**Removida confirmação de senha do formulário de edição de usuário**
+
+### Removido
+- **Campo de Confirmação de Senha na Edição**
+  - Removido campo "Confirmar Nova Senha" do formulário de edição
+  - Removida validação JavaScript de confirmação
+  - Removida validação server-side de confirmação no método `update()`
+  - Simplificação do processo de alteração de senha
+
+### Melhorado
+- **Formulário de Edição** (`users/edit.twig`)
+  - Layout mais limpo sem campo de confirmação
+  - Campo "Nova Senha" em linha completa
+  - Processo de edição mais rápido e simples
+
+- **UserController**
+  - Método `update()` simplificado
+  - Validação apenas de tamanho mínimo (6 caracteres)
+  - Mantida segurança com hash bcrypt
+  - Senha só é alterada se campo for preenchido
+
+### Justificativa
+- Confirmação de senha é importante apenas na criação (usuário digitando pela primeira vez)
+- Na edição, o usuário já conhece a senha e pode verificar visualmente
+- Simplifica o processo de alteração de senha
+- Reduz fricção na experiência do usuário
+- Mantém segurança com validação de tamanho mínimo
+
+### Nota
+- Formulário de criação mantém confirmação de senha (importante para primeira digitação)
+- Formulário de edição não requer confirmação (usuário já conhece a senha)
+
+---
+
+## [1.6.5] - 2026-01-16
+
+**Preenchimento automático do campo Apelido**
+
+### Adicionado
+- **Preenchimento Automático de Apelido**
+  - Campo "Apelido" é preenchido automaticamente ao digitar o nome
+  - Extrai o primeiro nome do campo "Nome Completo"
+  - Atualiza em tempo real conforme o usuário digita
+  - Usuário pode editar o apelido manualmente se desejar
+
+### Melhorado
+- **Formulário de Criação** (`users/create.twig`)
+  - JavaScript detecta mudanças no campo "Nome Completo"
+  - Extrai primeiro nome (texto antes do primeiro espaço)
+  - Preenche automaticamente o campo "Apelido"
+  - Melhora experiência do usuário (menos digitação)
+
+### Exemplo
+```
+Nome Completo: "João da Silva Santos"
+Apelido: "João" (preenchido automaticamente)
+```
+
+---
+
+## [1.6.4] - 2026-01-16
+
+**Adicionada confirmação de senha nos formulários de usuário**
+
+### Adicionado
+- **Campo de Confirmação de Senha**
+  - Campo "Confirmar Senha" no formulário de criação
+  - Campo "Confirmar Nova Senha" no formulário de edição
+  - Validação client-side (JavaScript) antes de enviar
+  - Validação server-side (PHP) no backend
+  - Mensagem de erro clara quando senhas não coincidem
+
+### Melhorado
+- **Formulário de Criação** (`users/create.twig`)
+  - Reorganizado: Senha e Confirmar Senha na mesma linha
+  - Username em linha separada
+  - Validação antes de enviar ao servidor
+
+- **Formulário de Edição** (`users/edit.twig`)
+  - Nova Senha e Confirmar Nova Senha na mesma linha
+  - Username em linha separada
+  - Validação apenas se senha for preenchida
+
+- **UserController**
+  - Método `store()` valida confirmação de senha
+  - Método `update()` valida confirmação se senha for alterada
+  - Retorna erro 422 se senhas não coincidirem
+
+### Segurança
+- Dupla validação (client + server) previne erros de digitação
+- Senha só é alterada se confirmação for idêntica
+- Mensagem de erro específica para o usuário
+
+---
+
+## [1.6.3] - 2026-01-16
+
+**Sistema de upload de foto de usuário implementado**
+
+### Adicionado
+- **Upload de Foto de Usuário**
+  - Campo de texto mostrando nome do arquivo selecionado
+  - Botão "Escolher arquivo" para selecionar imagem
+  - Preview da imagem abaixo do campo
+  - Botão X no preview para remover foto
+  - Validação de tipo (JPG, PNG, GIF, WEBP)
+  - Validação de tamanho (máximo 5MB)
+  - Redimensionamento automático para 400x400px
+
+- **Helper Upload** (`app/Helpers/Upload.php`)
+  - Classe completa para gerenciar uploads
+  - Método `image()` - Upload de imagens com validação
+  - Método `delete()` - Remove arquivo do servidor
+  - Método `exists()` - Verifica se arquivo existe
+  - Redimensionamento automático mantendo proporção
+  - Preserva transparência em PNG e GIF
+  - Validação de tipo MIME e extensão
+  - Geração de nome único para evitar conflitos
+  - Suporte a JPEG, PNG, GIF e WEBP
+
+- **Funcionalidades de Segurança**
+  - Validação de tipo MIME (não confia apenas na extensão)
+  - Limite de tamanho de 5MB
+  - Nome de arquivo único (evita sobrescrever)
+  - Armazenamento em pasta separada (`uploads/users/`)
+  - Redimensionamento automático (economiza espaço)
+
+### Melhorado
+- **Formulário de Criação** (`users/create.twig`)
+  - Layout horizontal: campo de texto + botão
+  - Preview da imagem em caixa com borda
+  - Botão X para remover preview
+  - Validação client-side de tipo e tamanho
+  - Envio via FormData (suporta arquivos)
+
+- **Formulário de Edição** (`users/edit.twig`)
+  - Exibe nome da foto atual no campo
+  - Preview da foto atual (se existir)
+  - Permite alterar foto
+  - Permite remover foto
+  - Preview da nova foto antes de salvar
+  - Mantém foto antiga se não alterar
+
+- **UserController**
+  - Método `store()` processa upload na criação
+  - Método `update()` processa upload na edição
+  - Remove foto antiga ao fazer upload de nova
+  - Remove foto do servidor ao deletar usuário
+  - Validação de upload no backend
+
+- **CSS** (`public/assets/css/users.css`)
+  - Layout horizontal para campo + botão
+  - Preview em caixa com borda arredondada
+  - Botão X posicionado no canto superior direito
+  - Imagem limitada a 300x300px no preview
+  - Layout responsivo
+
+### Técnico
+- Upload usa GD Library do PHP
+- Imagens redimensionadas para 400x400px (economiza espaço)
+- Mantém proporção original da imagem
+- Preserva transparência em PNG/GIF
+- Qualidade JPEG: 90%
+- Qualidade PNG: 9 (máxima compressão)
+- Arquivos salvos em `public/uploads/users/`
+- Nome do arquivo: `img_[uniqid].[ext]`
+- Caminho salvo no banco: `users/img_xxxxx.jpg`
+
+---
+
+## [1.6.2] - 2026-01-15
+
+**Adicionados campos adicionais no cadastro de usuários**
+
+### Adicionado
+- **Novos Campos no Formulário de Usuários**
+  - `alias` - Apelido do usuário (60 caracteres)
+  - `cpf` - CPF com validação e máscara automática (000.000.000-00)
+  - `birth_date` - Data de nascimento (campo date)
+  - `gender_id` - Gênero (Masculino/Feminino)
+  - `phone_home` - Telefone residencial com máscara
+  - `phone_mobile` - Celular com máscara
+  - `phone_message` - WhatsApp com máscara
+
+- **Validação de CPF**
+  - Validação client-side (JavaScript) com algoritmo completo
+  - Validação server-side (PHP) no UserController
+  - Verifica dígitos verificadores
+  - Rejeita CPFs com todos os dígitos iguais
+  - Método privado `validateCPF()` no UserController
+
+- **Máscaras Automáticas**
+  - CPF: 000.000.000-00
+  - Telefones: (00) 0000-0000 ou (00) 00000-0000
+  - Aplicadas automaticamente durante digitação
+
+### Melhorado
+- **Formulário de Criação** (`users/create.twig`)
+  - Layout reorganizado com campos agrupados logicamente
+  - Validação de CPF antes do envio
+  - Máscaras aplicadas em tempo real
+
+- **Formulário de Edição** (`users/edit.twig`)
+  - Mesmos campos adicionados
+  - Valores preenchidos automaticamente
+  - Validação e máscaras idênticas ao formulário de criação
+
+- **UserController**
+  - Método `store()` atualizado para processar novos campos
+  - Método `update()` atualizado para processar novos campos
+  - Método `validateCPF()` privado para validação server-side
+  - Campos opcionais removidos se vazios (não salva NULL desnecessário)
+  - CPF salvo apenas com números no banco
+
+### Técnico
+- Validação de CPF usa algoritmo oficial da Receita Federal
+- Máscaras aplicadas com JavaScript puro (sem bibliotecas)
+- Campos opcionais não são obrigatórios
+- Compatível com schema SQL existente
+- Todos os campos já existem na tabela `users`
+
+---
+
 ## [1.6.1] - 2026-01-15
 
 **Correções de compatibilidade com PHP 8.5.0 e Apache 2.4+**

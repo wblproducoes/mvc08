@@ -1,0 +1,128 @@
+{% extends "default/layouts/crud.twig" %}
+
+{% block title %}Gêneros - {{ app_name }}{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <div>
+            <h1>Gêneros</h1>
+            <p class="page-subtitle">Gerenciar gêneros do sistema</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url('genders/create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Novo Gênero
+            </a>
+            <a href="{{ url('genders/trash') }}" class="btn btn-secondary">
+                <i class="bi bi-trash"></i> Lixeira
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% if genders|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Tradução</th>
+                            <th>Descrição</th>
+                            <th>Data de Cadastro</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gender in genders %}
+                        <tr>
+                            <td><strong>#{{ gender.id }}</strong></td>
+                            <td>{{ gender.name }}</td>
+                            <td>{{ gender.translate }}</td>
+                            <td>{{ gender.description|default('-') }}</td>
+                            <td>{{ gender.dh|date('d/m/Y H:i') }}</td>
+                            <td class="text-end">
+                                <a href="{{ url('genders/' ~ gender.id ~ '/edit') }}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteGender({{ gender.id }})" title="Deletar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if pagination.total_pages > 1 %}
+            <nav class="pagination-wrapper">
+                <ul class="pagination">
+                    {% if pagination.current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">Primeira</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.current_page - 1 }}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page in pagination.pages %}
+                    <li class="page-item {% if page == pagination.current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if pagination.current_page < pagination.total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.current_page + 1 }}">Próxima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.total_pages }}">Última</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Nenhum gênero cadastrado. <a href="{{ url('genders/create') }}">Criar novo</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+function deleteGender(id) {
+    if (confirm('Tem certeza que deseja deletar este gênero?')) {
+        const formData = new FormData();
+        formData.append('csrf_token', '{{ csrf_token }}');
+        
+        fetch('{{ url('genders') }}/' + id, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-HTTP-Method-Override': 'DELETE'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao deletar gênero');
+            console.error(error);
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+<script>
+function toggleDropdown() {
+    document.getElementById('userDropdown').classList.toggle('show');
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+}
+
+function toggleSubmenu(element) {
+    const submenu = element.nextElementSibling;
+    const arrow = element.querySelector('.nav-arrow');
+    submenu.classList.toggle('show');
+    arrow.style.transform = submenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+window.onclick = function(event) {
+    if (!event.target.closest('.user-menu')) {
+        var dropdown = document.getElementById('userDropdown');
+        if (dropdown && dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        }
+    }
+}
+</script>

@@ -1,5 +1,6 @@
 /**
- * Estilos para CRUD de Usuários
+ * Estilos Genéricos para CRUD
+ * Aplicável a todas as páginas de CRUD (Usuários, Status, Níveis, Gêneros, etc)
  */
 
 /* Page Header */
@@ -8,6 +9,17 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+}
+
+.page-header > div:first-child h1 {
+    margin: 0;
+}
+
+.page-header > div:last-child,
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 /* Buttons */
@@ -44,6 +56,15 @@
     background: #5a6268;
 }
 
+.btn-info {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #2563eb;
+}
+
 .btn-warning {
     background: #f59e0b;
     color: white;
@@ -62,9 +83,56 @@
     background: #dc2626;
 }
 
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
 .btn-sm {
     padding: 6px 12px;
     font-size: 0.85rem;
+    position: relative;
+}
+
+.btn[title] {
+    position: relative;
+}
+
+.btn[title]:hover::before {
+    content: attr(title);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+.btn[title]:hover::after {
+    content: '';
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1e293b;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.btn-w-100 {
+    width: 100%;
 }
 
 /* Card */
@@ -73,6 +141,7 @@
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
 }
 
 .card-body {
@@ -82,11 +151,14 @@
 /* Table */
 .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 0;
+    table-layout: auto;
 }
 
 .table thead {
@@ -102,6 +174,14 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+    line-height: 1.2;
+    height: 44px;
+    vertical-align: middle;
+}
+
+.table th:last-child {
+    text-align: right;
 }
 
 .table td {
@@ -109,6 +189,11 @@
     border-bottom: 1px solid #e2e8f0;
     font-size: 0.9rem;
     color: #334155;
+    word-break: break-word;
+}
+
+.table tbody tr {
+    transition: background 0.2s;
 }
 
 .table tbody tr:hover {
@@ -175,9 +260,27 @@
     margin: 0 -15px;
 }
 
+.col-md-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+    padding: 0 15px;
+}
+
+.col-md-4 {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+    padding: 0 15px;
+}
+
 .col-md-6 {
     flex: 0 0 50%;
     max-width: 50%;
+    padding: 0 15px;
+}
+
+.col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
     padding: 0 15px;
 }
 
@@ -200,6 +303,7 @@
     border-radius: 8px;
     font-size: 0.9rem;
     transition: all 0.2s;
+    font-family: inherit;
 }
 
 .form-control:focus {
@@ -210,6 +314,11 @@
 
 .form-control.is-invalid {
     border-color: #ef4444;
+}
+
+.form-control[readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
 }
 
 .form-text {
@@ -238,45 +347,69 @@
     gap: 10px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .col-md-6 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-    
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-    
-    .table {
-        font-size: 0.85rem;
-    }
-    
-    .table th,
-    .table td {
-        padding: 10px;
-    }
+/* Alert */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
+.alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.alert-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.alert-warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.alert-dismissible {
+    position: relative;
+}
+
+.btn-close {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
 
 /* Pagination */
-.pagination-container {
+.pagination-wrapper {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
+    justify-content: center;
+    margin-top: 30px;
     padding-top: 20px;
-    border-top: 1px solid var(--border, #e2e8f0);
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.pagination-info {
-    font-size: 0.85rem;
-    color: #64748b;
+    border-top: 1px solid #e2e8f0;
 }
 
 .pagination {
@@ -322,19 +455,6 @@
     pointer-events: none;
     background: #f8fafc;
 }
-
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .page-link {
-        padding: 6px 10px;
-        font-size: 0.85rem;
-    }
-}
-
 
 /* Upload de Foto */
 .photo-upload-wrapper {
@@ -389,3 +509,83 @@
     line-height: 1;
 }
 
+/* Responsive */
+@media (max-width: 768px) {
+    .col-md-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .page-header > div:last-child,
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 10px;
+    }
+    
+    .pagination-wrapper {
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+}
+
+/* Estilos de Consistência */
+body {
+    background-color: #f8fafc;
+}
+
+.main-content {
+    background-color: #f8fafc;
+}
+
+/* Garante que o conteúdo não fica muito largo */
+.card {
+    max-width: 100%;
+}
+
+/* Espaçamento consistente */
+.page-header h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 5px 0;
+}
+
+.page-subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0;
+}

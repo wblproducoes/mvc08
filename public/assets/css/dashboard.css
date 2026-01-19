@@ -232,6 +232,8 @@ body {
 
 .sidebar-nav {
     padding: 20px 15px;
+    overflow-y: auto;
+    max-height: calc(100vh - var(--topbar-height) - 40px);
 }
 
 .nav-section {
@@ -304,7 +306,7 @@ body {
 }
 
 .nav-submenu.show {
-    max-height: 1000px;
+    max-height: 2000px;
     margin-top: 5px;
 }
 

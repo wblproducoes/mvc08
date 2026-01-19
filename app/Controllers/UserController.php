@@ -9,6 +9,7 @@ use App\Models\Level;
 use App\Helpers\Security;
 use App\Helpers\Validator;
 use App\Helpers\Pagination;
+use App\Helpers\Upload;
 
 /**
  * Controller de Usuários
@@ -123,13 +124,32 @@ class UserController extends Controller
         
         $data = [
             'name' => Security::sanitize($_POST['name'] ?? ''),
+            'alias' => Security::sanitize($_POST['alias'] ?? ''),
             'email' => Security::sanitize($_POST['email'] ?? ''),
+            'cpf' => Security::sanitize($_POST['cpf'] ?? ''),
+            'birth_date' => $_POST['birth_date'] ?? null,
+            'gender_id' => !empty($_POST['gender_id']) ? (int) $_POST['gender_id'] : null,
+            'phone_home' => Security::sanitize($_POST['phone_home'] ?? ''),
+            'phone_mobile' => Security::sanitize($_POST['phone_mobile'] ?? ''),
+            'phone_message' => Security::sanitize($_POST['phone_message'] ?? ''),
             'username' => Security::sanitize($_POST['username'] ?? ''),
             'password' => $_POST['password'] ?? '',
             'status_id' => (int) ($_POST['status_id'] ?? 1),
             'level_id' => (int) ($_POST['level_id'] ?? 11),
             'unique_code' => uniqid('user_', true)
         ];
+        
+        // Upload de foto
+        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $upload = new Upload();
+            $result = $upload->image($_FILES['photo'], 'users', 400, 400);
+            
+            if ($result['success']) {
+                $data['photo'] = $result['filename'];
+            } else {
+                $this->json(['success' => false, 'message' => $result['message']], 422);
+            }
+        }
         
         // Validação
         $validator = new Validator();
@@ -139,6 +159,21 @@ class UserController extends Controller
                   ->required($data['username'], 'username')
                   ->required($data['password'], 'password')
                   ->min($data['password'], 6, 'password');
+        
+        // Validação de confirmação de senha
+        $passwordConfirmation = $_POST['password_confirmation'] ?? '';
+        if ($data['password'] !== $passwordConfirmation) {
+            $this->json(['success' => false, 'message' => 'As senhas não coincidem'], 422);
+        }
+        
+        // Validação de CPF
+        if (!empty($data['cpf'])) {
+            $cpf = preg_replace('/\D/', '', $data['cpf']);
+            if (!$this->validateCPF($cpf)) {
+                $this->json(['success' => false, 'message' => 'CPF inválido'], 422);
+            }
+            $data['cpf'] = $cpf; // Salva apenas números
+        }
         
         if ($validator->fails()) {
             $this->json(['success' => false, 'errors' => $validator->errors()], 422);
@@ -158,6 +193,15 @@ class UserController extends Controller
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $data['dh'] = date('Y-m-d H:i:s');
         
+        // Remove campos vazios opcionais
+        if (empty($data['alias'])) unset($data['alias']);
+        if (empty($data['cpf'])) unset($data['cpf']);
+        if (empty($data['birth_date'])) unset($data['birth_date']);
+        if (empty($data['gender_id'])) unset($data['gender_id']);
+        if (empty($data['phone_home'])) unset($data['phone_home']);
+        if (empty($data['phone_mobile'])) unset($data['phone_mobile']);
+        if (empty($data['phone_message'])) unset($data['phone_message']);
+        
         $userId = $this->userModel->create($data);
         
         if ($userId) {
@@ -169,6 +213,54 @@ class UserController extends Controller
         } else {
             $this->json(['success' => false, 'message' => 'Erro ao criar usuário'], 500);
         }
+    }
+    
+    /**
+     * Valida CPF
+     * 
+     * @param string $cpf CPF apenas com números
+     * @return bool
+     */
+    private function validateCPF(string $cpf): bool
+    {
+        // Remove caracteres não numéricos
+        $cpf = preg_replace('/\D/', '', $cpf);
+        
+        // Verifica se tem 11 dígitos
+        if (strlen($cpf) != 11) {
+            return false;
+        }
+        
+        // Verifica se todos os dígitos são iguais
+        if (preg_match('/^(\d)\1{10}$/', $cpf)) {
+            return false;
+        }
+        
+        // Valida primeiro dígito verificador
+        $sum = 0;
+        for ($i = 0; $i < 9; $i++) {
+            $sum += intval($cpf[$i]) * (10 - $i);
+        }
+        $remainder = $sum % 11;
+        $digit1 = ($remainder < 2) ? 0 : 11 - $remainder;
+        
+        if (intval($cpf[9]) != $digit1) {
+            return false;
+        }
+        
+        // Valida segundo dígito verificador
+        $sum = 0;
+        for ($i = 0; $i < 10; $i++) {
+            $sum += intval($cpf[$i]) * (11 - $i);
+        }
+        $remainder = $sum % 11;
+        $digit2 = ($remainder < 2) ? 0 : 11 - $remainder;
+        
+        if (intval($cpf[10]) != $digit2) {
+            return false;
+        }
+        
+        return true;
     }
     
     /**
@@ -210,11 +302,43 @@ class UserController extends Controller
         
         $data = [
             'name' => Security::sanitize($_POST['name'] ?? ''),
+            'alias' => Security::sanitize($_POST['alias'] ?? ''),
             'email' => Security::sanitize($_POST['email'] ?? ''),
+            'cpf' => Security::sanitize($_POST['cpf'] ?? ''),
+            'birth_date' => $_POST['birth_date'] ?? null,
+            'gender_id' => !empty($_POST['gender_id']) ? (int) $_POST['gender_id'] : null,
+            'phone_home' => Security::sanitize($_POST['phone_home'] ?? ''),
+            'phone_mobile' => Security::sanitize($_POST['phone_mobile'] ?? ''),
+            'phone_message' => Security::sanitize($_POST['phone_message'] ?? ''),
             'username' => Security::sanitize($_POST['username'] ?? ''),
             'status_id' => (int) ($_POST['status_id'] ?? 1),
             'level_id' => (int) ($_POST['level_id'] ?? 11)
         ];
+        
+        // Upload de nova foto
+        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $upload = new Upload();
+            $result = $upload->image($_FILES['photo'], 'users', 400, 400);
+            
+            if ($result['success']) {
+                // Remove foto antiga se existir
+                if (!empty($user['photo'])) {
+                    $upload->delete($user['photo']);
+                }
+                $data['photo'] = $result['filename'];
+            } else {
+                $this->json(['success' => false, 'message' => $result['message']], 422);
+            }
+        }
+        
+        // Remove foto se solicitado
+        if (isset($_POST['remove_photo']) && $_POST['remove_photo'] == '1') {
+            if (!empty($user['photo'])) {
+                $upload = new Upload();
+                $upload->delete($user['photo']);
+            }
+            $data['photo'] = null;
+        }
         
         // Validação
         $validator = new Validator();
@@ -222,6 +346,15 @@ class UserController extends Controller
                   ->required($data['email'], 'email')
                   ->email($data['email'], 'email')
                   ->required($data['username'], 'username');
+        
+        // Validação de CPF
+        if (!empty($data['cpf'])) {
+            $cpf = preg_replace('/\D/', '', $data['cpf']);
+            if (!$this->validateCPF($cpf)) {
+                $this->json(['success' => false, 'message' => 'CPF inválido'], 422);
+            }
+            $data['cpf'] = $cpf; // Salva apenas números
+        }
         
         if ($validator->fails()) {
             $this->json(['success' => false, 'errors' => $validator->errors()], 422);
@@ -245,10 +378,20 @@ class UserController extends Controller
             if ($validator->fails()) {
                 $this->json(['success' => false, 'errors' => $validator->errors()], 422);
             }
+            
             $data['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT);
         }
         
         $data['dh_update'] = date('Y-m-d H:i:s');
+        
+        // Remove campos vazios opcionais
+        if (empty($data['alias'])) unset($data['alias']);
+        if (empty($data['cpf'])) unset($data['cpf']);
+        if (empty($data['birth_date'])) unset($data['birth_date']);
+        if (empty($data['gender_id'])) unset($data['gender_id']);
+        if (empty($data['phone_home'])) unset($data['phone_home']);
+        if (empty($data['phone_mobile'])) unset($data['phone_mobile']);
+        if (empty($data['phone_message'])) unset($data['phone_message']);
         
         if ($this->userModel->update($id, $data)) {
             $this->json([

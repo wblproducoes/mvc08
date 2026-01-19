@@ -1,0 +1,74 @@
+{% extends "default/layouts/crud.twig" %}
+
+{% block title %}Lixeira de Gêneros - {{ app_name }}{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <div>
+            <h1>Lixeira de Gêneros</h1>
+            <p class="page-subtitle">Gêneros deletados</p>
+        </div>
+        <a href="{{ url('genders') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            {% if genders|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Tradução</th>
+                            <th>Deletado em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gender in genders %}
+                        <tr>
+                            <td><strong>#{{ gender.id }}</strong></td>
+                            <td>{{ gender.name }}</td>
+                            <td>{{ gender.translate }}</td>
+                            <td>{{ gender.deleted_at|date('d/m/Y H:i') }}</td>
+                            <td class="text-end">
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-sm btn-success" formaction="{{ url('genders/' ~ gender.id ~ '/restore') }}" title="Restaurar">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-danger" formaction="{{ url('genders/' ~ gender.id ~ '/force-delete') }}" onclick="return confirm('Deletar permanentemente?')" title="Deletar Permanentemente">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Nenhum gênero na lixeira. <a href="{{ url('genders') }}">Voltar para gêneros</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

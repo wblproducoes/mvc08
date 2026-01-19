@@ -1,0 +1,121 @@
+{% extends "default/layouts/crud.twig" %}
+
+{% block title %}Editar Gênero - {{ app_name }}{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <div>
+            <h1>Editar Gênero</h1>
+            <p class="page-subtitle">Atualize os dados do gênero</p>
+        </div>
+        <a href="{{ url('genders') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="genderForm" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="_method" value="PUT">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="name">Nome *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ gender.name }}" required autofocus>
+                            <small class="form-text">Ex: Male, Female</small>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="translate">Tradução *</label>
+                            <input type="text" class="form-control" id="translate" name="translate" value="{{ gender.translate }}" required>
+                            <small class="form-text">Ex: Masculino, Feminino</small>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="description">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ gender.description }}</textarea>
+                            <small class="form-text">Descrição opcional do gênero</small>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="dh">Data de Cadastro</label>
+                            <input type="text" class="form-control" id="dh" value="{{ gender.dh|date('d/m/Y H:i:s') }}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="dh_update">Última Atualização</label>
+                            <input type="text" class="form-control" id="dh_update" value="{% if gender.dh_update %}{{ gender.dh_update|date('d/m/Y H:i:s') }}{% else %}-{% endif %}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Atualizar
+                    </button>
+                    <a href="{{ url('genders') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.getElementById('genderForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Limpa erros anteriores
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    const formData = new FormData(this);
+    
+    fetch('{{ url('genders/' ~ gender.id) }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = data.redirect;
+        } else {
+            if (data.errors) {
+                for (let field in data.errors) {
+                    const input = document.getElementById(field);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        input.nextElementSibling.textContent = data.errors[field];
+                    }
+                }
+            } else {
+                alert(data.message);
+            }
+        }
+    })
+    .catch(error => {
+        alert('Erro ao atualizar gênero');
+        console.error(error);
+    });
+});
+</script>
+{% endblock %}

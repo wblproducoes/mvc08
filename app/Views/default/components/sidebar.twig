@@ -1,0 +1,35 @@
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-title">Menu Principal</div>
+            <a class="nav-link" href="{{ url('dashboard') }}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Sistema</div>
+            <a class="nav-link nav-dropdown active" href="javascript:void(0)" onclick="toggleSubmenu(this)">
+                <i class="bi bi-gear"></i> Configurações
+                <i class="bi bi-chevron-down nav-arrow" style="transform: rotate(180deg);"></i>
+            </a>
+            <div class="nav-submenu show">
+                <a class="nav-link nav-sublink {% if current_page == 'users' %}active{% endif %}" href="{{ url('users') }}">
+                    <i class="bi bi-people"></i> Usuários
+                </a>
+                <a class="nav-link nav-sublink {% if current_page == 'status' %}active{% endif %}" href="{{ url('status') }}">
+                    <i class="bi bi-toggle-on"></i> Status
+                </a>
+                <a class="nav-link nav-sublink {% if current_page == 'levels' %}active{% endif %}" href="{{ url('levels') }}">
+                    <i class="bi bi-shield-lock"></i> Níveis de Acesso
+                </a>
+                <a class="nav-link nav-sublink {% if current_page == 'genders' %}active{% endif %}" href="{{ url('genders') }}">
+                    <i class="bi bi-person-badge"></i> Gêneros
+                </a>
+                <a class="nav-link nav-sublink {% if current_page == 'settings' %}active{% endif %}" href="{{ url('settings') }}">
+                    <i class="bi bi-sliders"></i> Geral
+                </a>
+            </div>
+        </div>
+    </nav>
+</aside>

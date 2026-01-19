@@ -1,80 +1,8 @@
-{% extends "default/layout.twig" %}
+{% extends "default/layouts/crud.twig" %}
 
 {% block title %}Editar Usuário - {{ app_name }}{% endblock %}
 
-{% block styles %}
-<link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}?v=3">
-<link rel="stylesheet" href="{{ asset('assets/css/users.css') }}">
-{% endblock %}
-
-{% block content %}
-<!-- Topbar -->
-<div class="topbar">
-    <div class="topbar-left">
-        <i class="bi bi-list menu-toggle" onclick="toggleSidebar()"></i>
-        <div class="topbar-logo">
-            <img src="{{ asset('assets/img/logo.svg') }}" alt="{{ app_name }}">
-        </div>
-    </div>
-    <div class="topbar-right">
-        <div class="topbar-icon">
-            <i class="bi bi-bell"></i>
-            <span class="badge"></span>
-        </div>
-        <div class="user-menu">
-            <div class="user-info" onclick="toggleDropdown()">
-                <div class="user-avatar">{{ user.name|slice(0, 1)|upper }}</div>
-                <div class="user-details">
-                    <div class="user-name">{{ user.name }}</div>
-                    <div class="user-role">Administrador</div>
-                </div>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-            <div class="dropdown-menu" id="userDropdown">
-                <a class="dropdown-item" href="{{ url('profile') }}">
-                    <i class="bi bi-person"></i> Meu Perfil
-                </a>
-                <a class="dropdown-item" href="{{ url('settings') }}">
-                    <i class="bi bi-gear"></i> Configurações
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{{ url('logout') }}">
-                    <i class="bi bi-box-arrow-right"></i> Sair
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Sidebar -->
-<aside class="sidebar" id="sidebar">
-    <nav class="sidebar-nav">
-        <div class="nav-section">
-            <div class="nav-section-title">Menu Principal</div>
-            <a class="nav-link" href="{{ url('dashboard') }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-        </div>
-        <div class="nav-section">
-            <div class="nav-section-title">Sistema</div>
-            <a class="nav-link nav-dropdown active" href="javascript:void(0)" onclick="toggleSubmenu(this)">
-                <i class="bi bi-gear"></i> Configurações
-                <i class="bi bi-chevron-down nav-arrow" style="transform: rotate(180deg);"></i>
-            </a>
-            <div class="nav-submenu show">
-                <a class="nav-link nav-sublink active" href="{{ url('users') }}">
-                    <i class="bi bi-people"></i> Usuários
-                </a>
-                <a class="nav-link nav-sublink" href="{{ url('settings') }}">
-                    <i class="bi bi-sliders"></i> Geral
-                </a>
-            </div>
-        </div>
-    </nav>
-</aside>
-
-<!-- Main Content -->
-<main class="main-content">
+{% block page_content %}
     <div class="page-header">
         <div>
             <h1>Editar Usuário</h1>
@@ -87,9 +15,10 @@
 
     <div class="card">
         <div class="card-body">
-            <form id="userForm" novalidate>
+            <form id="userForm" enctype="multipart/form-data" novalidate>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <input type="hidden" name="_method" value="PUT">
+                <input type="hidden" name="current_photo" value="{{ user.photo }}">
                 
                 <div class="row">
                     <div class="col-md-6">
@@ -102,13 +31,79 @@
                     
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                            <label for="alias">Apelido</label>
+                            <input type="text" class="form-control" id="alias" name="alias" value="{{ user.alias }}" maxlength="60">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
                 </div>
                 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="cpf">CPF</label>
+                            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ user.cpf }}" maxlength="14" placeholder="000.000.000-00">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="birth_date">Data de Nascimento</label>
+                            <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ user.birth_date }}">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="gender_id">Gênero</label>
+                            <select class="form-control" id="gender_id" name="gender_id">
+                                <option value="">Selecione...</option>
+                                <option value="1" {{ user.gender_id == 1 ? 'selected' : '' }}>Masculino</option>
+                                <option value="2" {{ user.gender_id == 2 ? 'selected' : '' }}>Feminino</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="phone_home">Telefone Residencial</label>
+                            <input type="text" class="form-control" id="phone_home" name="phone_home" value="{{ user.phone_home }}" maxlength="15" placeholder="(00) 0000-0000">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="phone_mobile">Celular</label>
+                            <input type="text" class="form-control" id="phone_mobile" name="phone_mobile" value="{{ user.phone_mobile }}" maxlength="15" placeholder="(00) 00000-0000">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="phone_message">WhatsApp</label>
+                            <input type="text" class="form-control" id="phone_message" name="phone_message" value="{{ user.phone_message }}" maxlength="15" placeholder="(00) 00000-0000">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -154,6 +149,49 @@
                     </div>
                 </div>
                 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="dh">Data de Cadastro</label>
+                            <input type="text" class="form-control" id="dh" value="{{ user.dh|date('d/m/Y H:i:s') }}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="unique_code">Código Único</label>
+                            <input type="text" class="form-control" id="unique_code" value="{{ user.unique_code }}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="photo">Foto</label>
+                            <div class="photo-upload-wrapper">
+                                <input type="text" class="form-control photo-filename" id="photoFilename" readonly placeholder="{% if user.photo %}{{ user.photo }}{% else %}Nenhum arquivo selecionado{% endif %}">
+                                <input type="file" class="form-control" id="photo" name="photo" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-secondary btn-choose-file" onclick="document.getElementById('photo').click()">
+                                    Escolher arquivo
+                                </button>
+                            </div>
+                            <small class="form-text">Formatos: JPG, PNG, GIF, WEBP (máx: 5MB)</small>
+                        </div>
+                        
+                        <!-- Preview da foto -->
+                        <div class="photo-preview-container" id="photoPreviewContainer" {% if user.photo %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                            <div class="photo-preview-box">
+                                <img id="photoPreview" src="{% if user.photo %}{{ asset('uploads/' ~ user.photo) }}{% endif %}" alt="Preview">
+                                <button type="button" class="btn btn-sm btn-danger btn-remove-preview" id="removePhoto">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="remove_photo" id="removePhotoFlag" value="0">
+                    </div>
+                </div>
+                
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check-circle"></i> Atualizar
@@ -165,8 +203,9 @@
             </form>
         </div>
     </div>
-</main>
+{% endblock %}
 
+{% block page_scripts %}
 <script>
 function toggleDropdown() {
     document.getElementById('userDropdown').classList.toggle('show');
@@ -192,21 +231,132 @@ window.onclick = function(event) {
     }
 }
 
+// Máscaras de formatação// Máscaras de formatação
+function maskCPF(value) {
+    return value
+        .replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+}
+
+function maskPhone(value) {
+    value = value.replace(/\D/g, '');
+    if (value.length <= 10) {
+        return value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else {
+        return value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    }
+}
+
+// Validação de CPF
+function validateCPF(cpf) {
+    cpf = cpf.replace(/\D/g, '');
+    
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
+        return false;
+    }
+    
+    let sum = 0;
+    let remainder;
+    
+    for (let i = 1; i <= 9; i++) {
+        sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    }
+    
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+    
+    sum = 0;
+    for (let i = 1; i <= 10; i++) {
+        sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    }
+    
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.substring(10, 11))) return false;
+    
+    return true;
+}
+
+// Aplicar máscaras
+document.getElementById('cpf').addEventListener('input', function(e) {
+    e.target.value = maskCPF(e.target.value);
+});
+
+document.getElementById('phone_home').addEventListener('input', function(e) {
+    e.target.value = maskPhone(e.target.value);
+});
+
+document.getElementById('phone_mobile').addEventListener('input', function(e) {
+    e.target.value = maskPhone(e.target.value);
+});
+
+document.getElementById('phone_message').addEventListener('input', function(e) {
+    e.target.value = maskPhone(e.target.value);
+});
+
+// Preview de foto
+document.getElementById('photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Valida tipo
+        if (!file.type.match('image.*')) {
+            alert('Por favor, selecione uma imagem válida');
+            e.target.value = '';
+            return;
+        }
+        
+        // Valida tamanho (5MB)
+        if (file.size > 5242880) {
+            alert('Imagem muito grande. Máximo: 5MB');
+            e.target.value = '';
+            return;
+        }
+        
+        // Mostra nome do arquivo
+        document.getElementById('photoFilename').value = file.name;
+        
+        // Mostra preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('photoPreview').src = e.target.result;
+            document.getElementById('photoPreviewContainer').style.display = 'block';
+            document.getElementById('removePhotoFlag').value = '0';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Remover foto
+document.getElementById('removePhoto').addEventListener('click', function() {
+    document.getElementById('photo').value = '';
+    document.getElementById('photoFilename').value = 'Nenhum arquivo selecionado';
+    document.getElementById('photoPreviewContainer').style.display = 'none';
+    document.getElementById('removePhotoFlag').value = '1';
+});
+
 document.getElementById('userForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     // Limpa erros anteriores
     document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     
+    // Validação de CPF
+    const cpfInput = document.getElementById('cpf');
+    if (cpfInput.value && !validateCPF(cpfInput.value)) {
+        cpfInput.classList.add('is-invalid');
+        cpfInput.nextElementSibling.textContent = 'CPF inválido';
+        return;
+    }
+    
+    // Usa FormData para enviar arquivo
     const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
     
     fetch('{{ url('users/' ~ user.id) }}', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
+        method: 'POST', // Usa POST com _method=PUT
+        body: formData
     })
     .then(response => response.json())
     .then(data => {

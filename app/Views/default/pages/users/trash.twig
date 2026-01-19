@@ -1,80 +1,8 @@
-{% extends "default/layout.twig" %}
+{% extends "default/layouts/crud.twig" %}
 
 {% block title %}Lixeira de Usuários - {{ app_name }}{% endblock %}
 
-{% block styles %}
-<link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}?v=3">
-<link rel="stylesheet" href="{{ asset('assets/css/users.css') }}">
-{% endblock %}
-
-{% block content %}
-<!-- Topbar -->
-<div class="topbar">
-    <div class="topbar-left">
-        <i class="bi bi-list menu-toggle" onclick="toggleSidebar()"></i>
-        <div class="topbar-logo">
-            <img src="{{ asset('assets/img/logo.svg') }}" alt="{{ app_name }}">
-        </div>
-    </div>
-    <div class="topbar-right">
-        <div class="topbar-icon">
-            <i class="bi bi-bell"></i>
-            <span class="badge"></span>
-        </div>
-        <div class="user-menu">
-            <div class="user-info" onclick="toggleDropdown()">
-                <div class="user-avatar">{{ user.name|slice(0, 1)|upper }}</div>
-                <div class="user-details">
-                    <div class="user-name">{{ user.name }}</div>
-                    <div class="user-role">Administrador</div>
-                </div>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-            <div class="dropdown-menu" id="userDropdown">
-                <a class="dropdown-item" href="{{ url('profile') }}">
-                    <i class="bi bi-person"></i> Meu Perfil
-                </a>
-                <a class="dropdown-item" href="{{ url('settings') }}">
-                    <i class="bi bi-gear"></i> Configurações
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{{ url('logout') }}">
-                    <i class="bi bi-box-arrow-right"></i> Sair
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Sidebar -->
-<aside class="sidebar" id="sidebar">
-    <nav class="sidebar-nav">
-        <div class="nav-section">
-            <div class="nav-section-title">Menu Principal</div>
-            <a class="nav-link" href="{{ url('dashboard') }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-        </div>
-        <div class="nav-section">
-            <div class="nav-section-title">Sistema</div>
-            <a class="nav-link nav-dropdown active" href="javascript:void(0)" onclick="toggleSubmenu(this)">
-                <i class="bi bi-gear"></i> Configurações
-                <i class="bi bi-chevron-down nav-arrow" style="transform: rotate(180deg);"></i>
-            </a>
-            <div class="nav-submenu show">
-                <a class="nav-link nav-sublink active" href="{{ url('users') }}">
-                    <i class="bi bi-people"></i> Usuários
-                </a>
-                <a class="nav-link nav-sublink" href="{{ url('settings') }}">
-                    <i class="bi bi-sliders"></i> Geral
-                </a>
-            </div>
-        </div>
-    </nav>
-</aside>
-
-<!-- Main Content -->
-<main class="main-content">
+{% block page_content %}
     <div class="page-header">
         <div>
             <h1>Lixeira de Usuários</h1>
@@ -162,8 +90,9 @@
             </div>
         </div>
     </div>
-</main>
+{% endblock %}
 
+{% block page_scripts %}
 <script>
 function toggleDropdown() {
     document.getElementById('userDropdown').classList.toggle('show');

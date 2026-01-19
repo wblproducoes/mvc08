@@ -110,3 +110,31 @@ $router->post('/levels/{id}/restore', 'LevelController', 'restore')
 
 $router->post('/levels/{id}/force-delete', 'LevelController', 'forceDelete')
        ->middleware('AuthMiddleware');
+
+// Rotas de Gêneros (CRUD)
+$router->get('/genders', 'GenderController', 'index')
+       ->middleware('AuthMiddleware');
+
+$router->get('/genders/trash', 'GenderController', 'trash')
+       ->middleware('AuthMiddleware');
+
+$router->get('/genders/create', 'GenderController', 'create')
+       ->middleware('AuthMiddleware');
+
+$router->post('/genders', 'GenderController', 'store')
+       ->middleware('AuthMiddleware');
+
+$router->get('/genders/{id}/edit', 'GenderController', 'edit')
+       ->middleware('AuthMiddleware');
+
+$router->put('/genders/{id}', 'GenderController', 'update')
+       ->middleware('AuthMiddleware');
+
+$router->delete('/genders/{id}', 'GenderController', 'destroy')
+       ->middleware('AuthMiddleware');
+
+$router->post('/genders/{id}/restore', 'GenderController', 'restore')
+       ->middleware('AuthMiddleware');
+
+$router->post('/genders/{id}/force-delete', 'GenderController', 'forceDelete')
+       ->middleware('AuthMiddleware');
