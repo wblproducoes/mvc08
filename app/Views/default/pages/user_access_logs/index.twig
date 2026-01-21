@@ -1,0 +1,215 @@
+{% extends "default/layouts/crud.twig" %}
+
+{% block title %}Logs de Acesso - {{ app_name }}{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <div>
+            <h1>Logs de Acesso</h1>
+            <p class="page-subtitle">Histórico de acessos e eventos do sistema</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <!-- Filtros -->
+            <div class="filters-section">
+                <form method="GET" class="filters-form">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="search">Buscar (Nome/Username/IP)</label>
+                            <input type="text" id="search" name="search" class="form-control" 
+                                   placeholder="Digite nome, username ou IP..." 
+                                   value="{{ filters.search }}">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="event_type_id">Tipo de Evento</label>
+                            <select id="event_type_id" name="event_type_id" class="form-control">
+                                <option value="">Todos</option>
+                                <option value="1" {% if filters.event_type_id == 1 %}selected{% endif %}>Login</option>
+                                <option value="2" {% if filters.event_type_id == 2 %}selected{% endif %}>Logout</option>
+                                <option value="3" {% if filters.event_type_id == 3 %}selected{% endif %}>Reset Password</option>
+                                <option value="4" {% if filters.event_type_id == 4 %}selected{% endif %}>Failed Login</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="success">Status</label>
+                            <select id="success" name="success" class="form-control">
+                                <option value="">Todos</option>
+                                <option value="1" {% if filters.success == 1 %}selected{% endif %}>Sucesso</option>
+                                <option value="0" {% if filters.success == 0 %}selected{% endif %}>Falha</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group filter-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                            <a href="{{ url('user-access-logs') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> Limpar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if logs|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Usuário</th>
+                            <th>IP Address</th>
+                            <th>Tipo de Evento</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>
+                                <small>{{ log.dh_access|date('d/m/Y H:i:s') }}</small>
+                            </td>
+                            <td>
+                                {% if log.user_name %}
+                                    <strong>{{ log.user_name }}</strong><br>
+                                    <small class="text-muted">@{{ log.username }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <code>{{ log.ip_address }}</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ log.event_type_name }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ log.success_badge }}">
+                                    {{ log.success_text }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url('user-access-logs/' ~ log.id) }}" class="btn btn-sm btn-info" title="Visualizar">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if pagination.total_pages > 1 %}
+            <nav class="pagination-wrapper">
+                <ul class="pagination">
+                    {% if pagination.current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.event_type_id %}&event_type_id={{ filters.event_type_id }}{% endif %}{% if filters.success %}&success={{ filters.success }}{% endif %}">Primeira</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.current_page - 1 }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.event_type_id %}&event_type_id={{ filters.event_type_id }}{% endif %}{% if filters.success %}&success={{ filters.success }}{% endif %}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page in pagination.pages %}
+                    <li class="page-item {% if page == pagination.current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.event_type_id %}&event_type_id={{ filters.event_type_id }}{% endif %}{% if filters.success %}&success={{ filters.success }}{% endif %}">{{ page }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if pagination.current_page < pagination.total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.current_page + 1 }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.event_type_id %}&event_type_id={{ filters.event_type_id }}{% endif %}{% if filters.success %}&success={{ filters.success }}{% endif %}">Próxima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ pagination.total_pages }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.event_type_id %}&event_type_id={{ filters.event_type_id }}{% endif %}{% if filters.success %}&success={{ filters.success }}{% endif %}">Última</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Nenhum log encontrado com os filtros aplicados.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+.filters-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    border-left: 4px solid #007bff;
+}
+
+.filters-form {
+    margin: 0;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-actions .btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

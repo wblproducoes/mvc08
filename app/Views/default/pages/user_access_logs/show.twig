@@ -1,0 +1,158 @@
+{% extends "default/layouts/crud.twig" %}
+
+{% block title %}Detalhes do Log - {{ app_name }}{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <div>
+            <h1>Detalhes do Log</h1>
+            <p class="page-subtitle">Informações completas do evento</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url('user-access-logs') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="log-details">
+                <div class="detail-row">
+                    <div class="detail-label">ID do Log</div>
+                    <div class="detail-value">
+                        <code>#{{ log.id }}</code>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Data/Hora</div>
+                    <div class="detail-value">
+                        {{ log.dh_access|date('d/m/Y H:i:s') }}
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Usuário</div>
+                    <div class="detail-value">
+                        {% if log.user_name %}
+                            <strong>{{ log.user_name }}</strong><br>
+                            <small class="text-muted">@{{ log.username }}</small>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">IP Address</div>
+                    <div class="detail-value">
+                        <code>{{ log.ip_address }}</code>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">User Agent</div>
+                    <div class="detail-value">
+                        <small>{{ log.user_agent|default('-') }}</small>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Tipo de Evento</div>
+                    <div class="detail-value">
+                        <span class="badge bg-info">{{ log.event_type_name }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">
+                        <span class="badge bg-{{ log.success_badge }}">
+                            {{ log.success_text }}
+                        </span>
+                    </div>
+                </div>
+
+                {% if log.details %}
+                <div class="detail-row">
+                    <div class="detail-label">Detalhes Adicionais</div>
+                    <div class="detail-value">
+                        <pre class="details-box">{{ log.details }}</pre>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+.log-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.detail-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.detail-value {
+    color: #555;
+    word-break: break-word;
+}
+
+.detail-value code {
+    background-color: #f5f5f5;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.detail-value .badge {
+    display: inline-block;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.85rem;
+}
+
+.details-box {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #ddd;
+    font-size: 0.85rem;
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .detail-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #666;
+    }
+}
+</style>
+{% endblock %}

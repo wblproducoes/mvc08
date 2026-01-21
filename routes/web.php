@@ -138,3 +138,10 @@ $router->post('/genders/{id}/restore', 'GenderController', 'restore')
 
 $router->post('/genders/{id}/force-delete', 'GenderController', 'forceDelete')
        ->middleware('AuthMiddleware');
+
+// Rotas de Logs de Acesso (Read-only)
+$router->get('/user-access-logs', 'UserAccessLogController', 'index')
+       ->middleware('AuthMiddleware');
+
+$router->get('/user-access-logs/{id}', 'UserAccessLogController', 'show')
+       ->middleware('AuthMiddleware');

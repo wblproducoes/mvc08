@@ -5,6 +5,108 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.8.0] - 2026-01-19
+
+**CRUD completo de Logs de Acesso + Centralização do Menu**
+
+### Adicionado
+- **Model UserAccessLog** (`app/Models/UserAccessLog.php`)
+  - Métodos para busca com filtros
+  - Paginação de logs
+  - Busca por nome/username/IP
+  - Filtro por tipo de evento (Login, Logout, Reset Password, Failed Login)
+  - Filtro por status (Sucesso/Falha)
+  - Método estático `getEventTypeName()` para tradução de tipos
+
+- **Controller UserAccessLogController** (`app/Controllers/UserAccessLogController.php`)
+  - Ação `index()` - Lista logs com filtros avançados
+  - Ação `show()` - Exibe detalhes completos de um log
+  - Filtros: busca (nome/username/IP), tipo de evento, status
+  - Paginação com 10 registros por página
+  - Formatação de dados para exibição
+
+- **Views de Logs de Acesso**
+  - `index.twig` - Listagem com filtros avançados
+    - Campo de busca (nome/username/IP)
+    - Dropdown de tipo de evento
+    - Dropdown de status (sucesso/falha)
+    - Botões de filtrar e limpar
+    - Tabela com data/hora, usuário, IP, tipo e status
+    - Paginação com preservação de filtros
+  - `show.twig` - Detalhes completos do log
+    - ID do log
+    - Data/hora do evento
+    - Informações do usuário
+    - IP address
+    - User agent
+    - Tipo de evento
+    - Status (sucesso/falha)
+    - Detalhes adicionais (se houver)
+
+- **Rotas RESTful** (`routes/web.php`)
+  - GET `/user-access-logs` - Lista logs com filtros
+  - GET `/user-access-logs/{id}` - Exibe detalhes do log
+
+### Melhorado
+- **Centralização do Menu**
+  - Removida duplicação de menu em 3 arquivos diferentes
+  - Menu agora centralizado em `components/sidebar.twig`
+  - `dashboard.twig` agora usa componente sidebar
+  - `_crud_base.twig` agora usa componente sidebar
+  - Suporte a `active_menu` para compatibilidade com páginas antigas
+  - Suporte a `current_page` para páginas novas
+  - Manutenção simplificada: alterar menu em um único lugar
+  - Todas as páginas sincronizadas automaticamente
+
+- **Menu de Configurações**
+  - Adicionado item "Logs de Acesso" no submenu de Configurações
+  - Ícone: `bi-clock-history`
+  - Integrado em todas as páginas (Dashboard, Usuários, Status, Níveis, Gêneros)
+
+### Funcionalidades
+- Listagem com paginação (10 registros por página)
+- Filtros avançados:
+  - Busca por nome do usuário, username ou IP
+  - Filtro por tipo de evento (4 tipos)
+  - Filtro por status (sucesso/falha)
+- Visualização de detalhes completos de cada log
+- Badges coloridas para status (verde=sucesso, vermelho=falha)
+- Badges para tipo de evento
+- Preservação de filtros na paginação
+- Interface responsiva e intuitiva
+- Sem permissão de edição/exclusão (apenas leitura)
+
+### Segurança
+- Acesso restrito a usuários autenticados
+- Validação de CSRF em todas as ações
+- Sanitização de inputs de filtro
+- Prepared statements no banco
+- Sem permissão de modificação (apenas leitura)
+
+### Técnico
+- Arquitetura MVC completa
+- Filtros dinâmicos com múltiplas condições
+- Paginação com preservação de parâmetros
+- Menu centralizado em componente reutilizável
+- Código totalmente documentado com PHPDoc
+- Compatível com schema SQL existente
+
+### Benefícios da Centralização
+- ✅ Menu sincronizado em todas as páginas
+- ✅ Manutenção simplificada (alterar em um único lugar)
+- ✅ Redução de código duplicado
+- ✅ Fácil adicionar novos itens ao menu
+- ✅ Consistência visual garantida
+- ✅ Sem mais problemas de menu desatualizado
+
+### Nota
+- Logs de acesso são criados automaticamente pelo sistema em eventos de login/logout
+- Útil para auditoria e monitoramento de segurança
+- Permite rastrear tentativas de acesso não autorizado
+- Histórico completo de atividades do sistema
+
+---
+
 ## [1.7.11] - 2026-01-16
 
 **Alinhamento do header "AÇÕES" à direita**
